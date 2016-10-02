@@ -1,0 +1,69 @@
+{
+    "stepPool": [
+        {
+            "id": "step1",
+            "requestConditions": {
+                "stam": "11",
+                "a": "s1"
+            },
+            "actions": [
+                {
+                    "response": {
+                        "uid": "{{req.uid}}",
+                        "a": "good1"
+                    }
+                }
+            ],
+            "delay": 30,
+            "type": "ws"
+        },
+        {
+            "id": "fb1",
+            "requestConditions": {},
+            "actions": [
+                {
+                    "response": {
+                        "uid": "{{req.uid}}",
+                        "a": "good33"
+                    }
+                }
+            ],
+            "type": "ws"
+        },
+        {
+            "id": "step2",
+            "requestConditions": {
+                "a": "s2"
+            },
+            "actions": [
+                {
+                    "response": {
+                        "uid": "{{req.uid}}",
+                        "a": "good2"
+                    }
+                },
+                {
+                    "response": {
+                        "uid": "{{req.uid}}",
+                        "b": "good3"
+                    }
+                }
+            ],
+            "delay": 30,
+            "type": "ws"
+        }
+    ],
+    "scenarios": [
+        {
+            "steps": [
+                "step1",
+                "step2"
+            ],
+            "fallbackSteps": [
+                "fb1"
+            ],
+            "weight": 10,
+            "name": "test"
+        }
+    ]
+}

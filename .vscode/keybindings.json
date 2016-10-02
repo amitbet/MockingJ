@@ -1,0 +1,18 @@
+// Place your key bindings in this file to overwrite the defaults
+[
+    {
+        "key": "ctrl+alt+w",
+        "command": "editor.debug.action.addWatchExpression",
+        "when": "inQuickOpen"
+    },
+    {
+        "key": "cmd+s",
+        "command":"workbench.action.tasks.build",
+        "when": "editorTextFocus && editorLangId == 'typescript'"
+    },
+    {
+        "key": "ctrl+s",
+        "command":"workbench.action.tasks.build",
+        "when": "editorTextFocus && editorLangId == 'typescript'"
+    } 
+]
