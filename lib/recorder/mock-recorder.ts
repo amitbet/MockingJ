@@ -15,7 +15,7 @@ export interface MockRecorderConfiguration {
     wsProxyTarget?: string;
     httpProxyTarget?: string;
     listeners: "ws" | "http" | "both";
-    matchWsBy?: "uid" | "time"; //default is uid
+
     matchWsField?: string; //default is uid
 }
 
@@ -26,7 +26,6 @@ export class MockRecorder {
     private _pendingRequests: _.Dictionary<any>;
     private _latestRequests: _.Dictionary<any>;;
     constructor(private _configObj: MockRecorderConfiguration, private _logger) {
-        this._configObj.matchWsBy = this._configObj.matchWsBy || "uid";
         this._configObj.matchWsField = this._configObj.matchWsField || "uid";
     }
 
