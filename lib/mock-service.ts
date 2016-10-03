@@ -4,10 +4,15 @@ import {MockStep, MockResponse} from "./mock-step";
 import {ScenarioRepo} from "./scenario-repo";
 import {EventEmitter} from "events";
 
-export interface MockServerSession {
-    scenarioId?: string;
-    scenarioPos?: number;
-    id: string;
+export interface MockServerIds {
+    sessionId: string;
+    socketId: string;
+}
+
+export interface MockSessionInfo {
+    scenarioId: string;
+    scenarioPos: number;
+    sessionId: string;
 }
 
 /**
@@ -26,13 +31,13 @@ export interface MockListener extends EventEmitter {
  */
 export interface MockResponder {
     sendMockResponse(originalMessage: any, // the request information
-        action: MockResponse, // the response dictated be the chosen step
-        session: MockServerSession); // the session created by the listener, holding scenario & step info updated by the MockFramework
+        action: MockResponse, // the response dictated by the chosen step
+        session: MockServerIds); // the session created by the listener, holding scenario & step info updated by the MockFramework
 }
 
 export class MockService {
     private scenarios: ScenarioRepo = new ScenarioRepo(this._logger);
-
+    private _sessionMap: _.Dictionary<MockSessionInfo> = {};
     constructor(scenarioFiles: Array<string>, private _logger: any) {
         // load all data files
         for (let sf in scenarioFiles) {
@@ -43,9 +48,10 @@ export class MockService {
     /**
   * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
   */
-    private getStepFromScenario(session: MockServerSession, msgObj: any): MockStep {
+    private getStepFromScenario(ids: MockServerIds, msgObj: any): MockStep {
         let mockScenario: any;
         let resMsg: any;
+        let session = this._sessionMap[ids.sessionId];
 
         //session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
         if (!session.scenarioId) {
@@ -63,7 +69,7 @@ export class MockService {
     private _responders: _.Dictionary<MockResponder> = {};
     private _listeners: _.Dictionary<MockListener> = {};
 
-    private handleResponse(response: MockResponse, type: string, message: any, session: MockServerSession) {
+    private handleResponse(response: MockResponse, type: string, message: any, session: MockServerIds) {
         let responder = this._responders[type];
         if (!responder) {
             this._logger.error("no responder registered for type: ", type);
@@ -92,7 +98,7 @@ export class MockService {
     /**
      * web socket message handler
      */
-    private handleIncomingMessage(session: MockServerSession, message: any) {
+    private handleIncomingMessage(session: MockServerIds, message: any) {
         let functionName = "MockService.handleIncomingMessage ";
         this._logger.trace("received: %s", message);
         let msgObj = message;

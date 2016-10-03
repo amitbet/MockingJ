@@ -3,7 +3,7 @@ import Uuid = require("node-uuid");
 import _ = require("lodash");
 import {MockResponse} from "./mock-step";
 import {EventEmitter} from "events";
-import {MockServerSession, MockListener, MockResponder} from "./mock-service";
+import {MockServerIds, MockListener, MockResponder} from "./mock-service";
 
 export class MockWsServer extends EventEmitter implements MockListener, MockResponder {
     private wss: WebSocket.Server;
@@ -30,17 +30,19 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         }
 
         this.wss.on("connection", (ws: WebSocket) => {
-            let session: MockServerSession = { id: Uuid.v4() };
-            session.id = Uuid.v4();
-            this._socketMap[session.id] = ws;
+            let ids: MockServerIds = { sessionId: Uuid.v4(), socketId: "" };
 
-            ws.on("message", this.onWebsocketMessage.bind(this, session, ws));
-            ws.once("error", this.onWebsocketError.bind(this, session, ws));
-            ws.once("close", this.onWebsocketClosed.bind(this, session, ws));
+            // since this is a websocket, we assume (for now) that the socket will last the whole session
+            ids.socketId = ids.sessionId;
+            this._socketMap[ids.socketId] = ws;
+
+            ws.on("message", this.onWebsocketMessage.bind(this, ids, ws));
+            ws.once("error", this.onWebsocketError.bind(this, ids, ws));
+            ws.once("close", this.onWebsocketClosed.bind(this, ids, ws));
         });
     }
 
-    private onWebsocketMessage(session: MockServerSession, ws: WebSocket, message: any) {
+    private onWebsocketMessage(session: MockServerIds, ws: WebSocket, message: any) {
         this.emit('incoming', session, JSON.parse(message));
     }
 
@@ -53,25 +55,25 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         }
     }
     public sendMockResponse(originalMessage: any, // the request information
-        action: MockResponse, // the response dictated be the chosen step
-        session: MockServerSession) {
-        let ws = this._socketMap[session.id];
+        action: MockResponse, // the response dictated by the chosen step
+        session: MockServerIds) {
+        let ws = this._socketMap[session.socketId];
         ws.send(JSON.stringify(action));
     }
 
     /**
      * web socket error handler
      */
-    private onWebsocketError(session: MockServerSession, ws, err) {
+    private onWebsocketError(session: MockServerIds, ws, err) {
         this._logger.error("onWebsocketError ", "websocket errored:", err);
-        delete this._socketMap[session.id];
+        delete this._socketMap[session.socketId];
         ws.close(1006); // 1006 - CLOSE_ABNORMAL
     }
     /**
      * web socket close handler
      */
-    private onWebsocketClosed(session: MockServerSession, ws) {
-        this._logger.info("onWebsocketClosed ", "websocket closed:", session.id);
-        delete this._socketMap[session.id];
+    private onWebsocketClosed(session: MockServerIds, ws) {
+        this._logger.info("onWebsocketClosed ", "websocket closed:", session.socketId);
+        delete this._socketMap[session.socketId];
     }
 }
