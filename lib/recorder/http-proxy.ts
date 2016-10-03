@@ -1,6 +1,7 @@
 import http = require('http');
 import httpProxy = require('http-proxy');
 import {EventEmitter} from 'events';
+var shortid = require("shortid");
 
 export class HttpProxy extends EventEmitter {
     private _server: http.Server;
@@ -12,8 +13,10 @@ export class HttpProxy extends EventEmitter {
             this.emit('incoming', req);
         });
 
-        proxy.on('proxyRes', (proxyRes, req, res) => {
-            this.emit('outgoing', proxyRes);
+        proxy.on('proxyRes', (proxyRes, req: http.IncomingMessage, res: http.ServerResponse) => {
+            //TODO: session extraction (find a real session)
+            let sessionId = shortid.generate();
+            this.emit('outgoing', proxyRes, req, sessionId);
         });
 
         this._server = http.createServer((req, res) => {

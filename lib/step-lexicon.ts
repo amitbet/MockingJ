@@ -19,16 +19,30 @@ export class StepLexicon {
     public addSteps(steps: Array<MockStep>) {
         for (var i = 0; i < steps.length; i++) {
             let step = steps[i];
-            this.addStep(step);
+            this.addOrUpdateStep(step);
         }
     }
 
     /**
      * adds a single step
      */
-    public addStep(step: MockStep) {
-        this._stepPool.push(step);
-        this.nameMap[step.id] = step;
+    public addOrUpdateStep(step: MockStep) {
+        let existingStep = this.nameMap[step.id]
+        //if step already exists, add responses to its response array
+        if (existingStep) {
+            let idx = existingStep.actions.length;
+            _.forEach(step.actions, (act) => {
+                if (!act.name) {
+                    act.name = "resp" + idx;
+                    ++idx;
+                }
+            });
+            existingStep.actions.concat(step.actions);
+        }
+        else {
+            this._stepPool.push(step);
+            this.nameMap[step.id] = step;
+        }
     }
 
     /**

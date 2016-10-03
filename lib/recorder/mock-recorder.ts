@@ -2,7 +2,12 @@ import {WsProxy} from './ws-proxy';
 import {HttpProxy} from './http-proxy';
 import qs = require('querystring');
 import {ScenarioRepo} from '../scenario-repo';
+import {MockStep, MockResponse} from '../mock-step';
 import {SimpleLogger} from "../simple-logger";
+import http = require('http');
+import _ = require("lodash");
+import {HttpMessageData} from "../http-message-data";
+import fs = require("fs");
 
 export interface MockRecorderConfiguration {
     wsProxyPort?: number;
@@ -10,25 +15,23 @@ export interface MockRecorderConfiguration {
     wsProxyTarget?: string;
     httpProxyTarget?: string;
     listeners: "ws" | "http" | "both";
+    matchWsBy?: "uid" | "time"; //default is uid
+    matchWsField?: string; //default is uid
 }
-
-// interface httpMessageDesc {
-//     method: string,
-//     url: string,
-//     headers: Array<Object>,
-//     body?: string
-// }
 
 export class MockRecorder {
     private _wsProxy: WsProxy;
     private _httpProxy: HttpProxy;
-    private _scenarioRepo;
-
+    private _scenarioRepo: ScenarioRepo;
+    private _pendingRequests: _.Dictionary<any>;
+    private _latestRequests: _.Dictionary<any>;;
     constructor(private _configObj: MockRecorderConfiguration, private _logger) {
+        this._configObj.matchWsBy = this._configObj.matchWsBy || "uid";
+        this._configObj.matchWsField = this._configObj.matchWsField || "uid";
     }
 
 
-    public start() {
+    public start(saveFilePath: string, saveInterval: number = 5000) {
         this._scenarioRepo = new ScenarioRepo(this._logger);
         switch (this._configObj.listeners) {
             case "ws":
@@ -42,13 +45,18 @@ export class MockRecorder {
                 this.createHttpListener();
                 break;
         }
+        setInterval(() => {
+            var repoJson = this._scenarioRepo.toJson();
+            fs.writeFile(saveFilePath, repoJson);
+        }, saveInterval);
     }
 
-    private processHttpResponse(res: any, callback: (res: any) => void): any {
-        var descObj: any = {
+    private processHttpResponse(res: any, callback: (result: HttpMessageData) => void): any {
+        var descObj: HttpMessageData = {
             status: res.statusCode,
             headers: res.headers,
-            reqUrl: res.req.path,
+            url: res.req.path,
+            body: null,
             time: new Date()
         };
         var body = '';
@@ -66,11 +74,12 @@ export class MockRecorder {
         });
     }
 
-    private processHttpRequest(httpMessage: any, callback: (res: any) => void) {
-        var descObj: any = {
+    private processHttpRequest(httpMessage: any, callback: (result: HttpMessageData) => void) {
+        var descObj: HttpMessageData = {
             method: httpMessage.method,
             url: httpMessage.url,
             headers: httpMessage.headers,
+            body: null,
             time: new Date()
         };
         var bodyObj;
@@ -99,20 +108,86 @@ export class MockRecorder {
         }
     }
     private handleIncomingHttp(req) {
+        // this.processHttpRequest(req, (info) => {
+        //     console.log("in: ", JSON.stringify(info));
+        // });
+    }
+    private handleOutgoingHttp(res: any, req: http.IncomingMessage, sessionId: string) {
         this.processHttpRequest(req, (info) => {
             console.log("in: ", JSON.stringify(info));
+            this.processHttpResponse(res, (info) => {
+                console.log("out: ", JSON.stringify(info));
+
+                let matchId = "1";
+                let reqId = sessionId + "**" + matchId;
+                let matchingReq = req;
+
+                if (!matchingReq) {
+                    this._logger.error("MockRecorder handleOutgoingHttp: response without matching request: ", res);
+                    return;
+                }
+
+                let step: MockStep = {
+                    requestConditions: matchingReq, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
+                    //delay - time to wait in millisecs before performing any actions
+                    type: "http", //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
+                    actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
+                    id: reqId,
+                    isFallback: false
+                };
+
+                let mRes: MockResponse = {
+                    response: res, // the response to send
+                    //delay - time to wait in millisecs before sending response
+                    type: "http" //"amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
+                    //name - an optional name, for logging & debugging
+                }
+
+                this._scenarioRepo.addStep(sessionId, step);
+
+                this._logger.debug("<---session: %s, http res: %s", sessionId, res);
+            });
         });
     }
-    private handleOutgoingHttp(res) {
-        this.processHttpResponse(res, (info) => {
-            console.log("out: ", JSON.stringify(info));
-        });
+
+    private handleIncomingWs(req: any, sessionId: string) {
+        let matchId = req[this._configObj.matchWsField];
+        this._pendingRequests[sessionId + "**" + matchId] = req;
+        this._latestRequests[sessionId] = req;
+        this._logger.debug("--->session: %s, ws req: ", sessionId, req);
     }
-    private handleIncomingWs(req) {
-        console.log(req);
-    }
-    private handleOutgoingWs(res) {
-        console.log(res);
+    private handleOutgoingWs(res: any, sessionId: string) {
+
+        let matchId = res[this._configObj.matchWsField];
+        let reqId = sessionId + "**" + matchId;
+        let matchingReq = this._pendingRequests[reqId];
+        if (!matchingReq) {
+            matchingReq = this._latestRequests[sessionId];
+        }
+        if (!matchingReq) {
+            this._logger.error("MockRecorder handleOutgoingWs: response without matching request: ", res);
+            return;
+        }
+
+        let step: MockStep = {
+            requestConditions: matchingReq, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
+            //delay - time to wait in millisecs before performing any actions
+            type: "ws", //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
+            actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
+            id: reqId,
+            isFallback: false
+        };
+
+        let mRes: MockResponse = {
+            response: res, // the response to send
+            //delay - time to wait in millisecs before sending response
+            type: "ws" //"amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
+            //name - an optional name, for logging & debugging
+        }
+
+        this._scenarioRepo.addStep(sessionId, step);
+
+        this._logger.debug("<---session: %s, ws res: %s", sessionId, res);
     }
 
     private createHttpListener() {

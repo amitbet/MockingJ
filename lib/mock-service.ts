@@ -52,10 +52,12 @@ export class MockService {
         let mockScenario: any;
         let resMsg: any;
         let session = this._sessionMap[ids.sessionId];
+        
+        //TODO: think of session end behaviour...
 
         //session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
         if (!session.scenarioId) {
-            session.scenarioId = this.scenarios.getRandomScenarioByWeight().name;
+            session.scenarioId = this.scenarios.getRandomScenarioByWeight().id;
             session.scenarioPos = 0;
         }
         //get the step from the scenario

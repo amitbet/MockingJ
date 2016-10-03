@@ -4,6 +4,7 @@ import _ = require("lodash");
 import {MockResponse} from "./mock-step";
 import {EventEmitter} from "events";
 import {MockServerIds, MockListener, MockResponder} from "./mock-service";
+import {HttpMessageData} from "./http-message-data";
 
 //for http client
 import * as request from "request";
@@ -30,13 +31,6 @@ export class MockHttpClient extends EventEmitter implements MockResponder {
     }
 }
 
-export interface HttpMessageData {
-    url?: string;
-    method?: string;
-    headers: _.Dictionary<string>;
-    body: string;
-    time: Date;
-}
 
 export class MockHttpServer extends EventEmitter implements MockListener, MockResponder {
     private _server: http.Server;
@@ -59,7 +53,7 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
             body: null
         };
         var bodyObj;
-        if (httpMessage.method == 'POST' || httpMessage.method == 'PUT') {
+        if (httpMessage.method == 'POST' || httpMessage.method == 'PUT' || httpMessage.method == 'DEL') {
             httpMessage.setEncoding('utf8');
             var body = '';
             httpMessage.on('data', function (data) {
@@ -73,8 +67,6 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
             httpMessage.on('end', function () {
                 bodyObj = JSON.parse(body);
                 callback(descObj);
-                // console.log(JSON.stringify(descObj));
-                // use POST
             });
             descObj.body = bodyObj;
         }
@@ -91,7 +83,7 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
             this._server = http.createServer((request, response) => {
                 let session: MockServerIds = { sessionId: Uuid.v4(), socketId: "" };
                 this.processHttpRequest(request, (httpMessageData) => {
-                    // TODO: settin the sessionId to be the socketId is bad - since it limits the scenario length to one (req->response).
+                    // TODO: setting the sessionId to be the socketId is bad - since it limits the scenario length to one (req->response).
                     // we should have some extrction routine to find the session in Http headers / url / cookie
                     session.socketId = session.sessionId;
                     this._socketMap[session.socketId] = response;

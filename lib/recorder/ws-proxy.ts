@@ -3,7 +3,7 @@ import ws = require('ws');
 import {EventEmitter} from 'events';
 var WebSocketServer = ws.Server;
 var Uuid = require("node-uuid");
-
+var shortid = require('shortid');
 export class WsProxy extends EventEmitter {
     private server;
 
@@ -39,7 +39,7 @@ export class WsProxy extends EventEmitter {
         this.server = new WebSocketServer(serverConfig, listening);
 
         this.server.on('connection', (incoming) => {
-            let sessionId = Uuid.v4();
+            let sessionId = shortid.generate();
             let outgoing = new ws(this._target),
                 open = false,
                 queue = [];

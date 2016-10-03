@@ -7,7 +7,7 @@ export interface Scenario {
     steps: Array<string>;//array of step names
     fallbackSteps: Array<string>;
     weight: number;
-    name: string;
+    id: string;
 }
 
 export class ScenarioRepo {
@@ -55,15 +55,15 @@ export class ScenarioRepo {
         sc.weight = sc.weight || 0;
         // sc.type = sc.type || "serial";
         this._scenarios.push(sc);
-        this._nameMap[sc.name] = sc;
+        this._nameMap[sc.id] = sc;
         this._maxLotteryTicket += sc.weight;
         this._lottery[this._maxLotteryTicket] = sc;
     }
 
-    public addStep(step: MockStep) {
-        this._stepLex.addStep(step);
+    public addStep(scenarioId: string, step: MockStep) {
+        this._stepLex.addOrUpdateStep(step);
     }
-    
+
     /**
      * conducts a weighted lottery between all scenarios in the repo, and chooses one
      */
