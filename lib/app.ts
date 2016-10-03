@@ -1,10 +1,10 @@
-import {MockServer} from "./mock-server";
+import {MockService} from "./mock-service";
+import {MockWsServer} from "./mock-ws-server";
+
 import {SimpleLogger} from "./simple-logger";
 import fs = require("fs");
 import http = require("http");
 import {ScenarioRepo} from "./scenario-repo";
-
-
 
 var logger = new SimpleLogger();
 
@@ -18,28 +18,29 @@ var repoJson = repo.toJson();
 fs.writeFileSync("./scenarios/test.json", repoJson);
 
 
-// -- ger config and run a MockServer instance
-let configObj;
-fs.readFile("./config/config.json", "utf8", (err, data) => {
-    if (err) throw err;
-    configObj = JSON.parse(data);
-    new MockServer(8044, ["./scenarios/MockScenario1.json"], configObj, logger);
-});
+// -- ger config and run a MockService instance
+//let configObj;
 
+var mockSvc = new MockService(["./scenarios/MockScenario1.json"], logger);
+
+var wsSrv = new MockWsServer(logger);
+mockSvc.registerListener(wsSrv, "ws");
+mockSvc.registerResponder(wsSrv, "ws");
+wsSrv.start(8044);
 
 
 //------static http for testing against ------
 
 //We need a function which handles requests and send response
-function handleRequest(request, response) {
-    response.end('It Works!! Path Hit: ' + request.url);
-}
+// function handleRequest(request, response) {
+//     response.end('It Works!! Path Hit: ' + request.url);
+// }
 
-//Create a server
-var server = http.createServer(handleRequest);
+// //Create a server
+// var server = http.createServer(handleRequest);
 
-//Lets start our server
-server.listen(8045, function () {
-    //Callback triggered when server is successfully listening. Hurray!
-    console.log("Server listening on: http://localhost:%s", 8045);
-});
+// //Lets start our server
+// server.listen(8045, function () {
+//     //Callback triggered when server is successfully listening. Hurray!
+//     console.log("Server listening on: http://localhost:%s", 8045);
+// });
