@@ -81,7 +81,7 @@ export class MockService {
             return;
         }
 
-        responder.sendMockResponse(message, response.response, session);
+        responder.sendMockResponse(message, response, session);
     }
 
     public registerResponder(responder: MockResponder, type: string) {
@@ -101,7 +101,7 @@ export class MockService {
     }
 
     /**
-     * web socket message handler
+     * incoming message handler
      */
     private handleIncomingMessage(session: MockServerIds, message: any) {
         let functionName = "MockService.handleIncomingMessage ";

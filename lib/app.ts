@@ -1,5 +1,6 @@
 import {MockService} from "./mock-service";
 import {MockWsServer} from "./mock-ws-server";
+import {MockHttpServer} from "./mock-http-server";
 
 import {SimpleLogger} from "./simple-logger";
 import fs = require("fs");
@@ -21,13 +22,17 @@ fs.writeFileSync("./scenarios/test.json", repoJson);
 // -- ger config and run a MockService instance
 //let configObj;
 
-var mockSvc = new MockService(["./scenarios/MockScenario1.json"], logger);
+var mockSvc = new MockService(["./scenarios/wsScenario.json"], logger);
+//var mockSvc = new MockService(["./scenarios/httpScenario.json"], logger);
 
 var wsSrv = new MockWsServer(logger);
 mockSvc.registerListener(wsSrv, "ws");
 mockSvc.registerResponder(wsSrv, "ws");
 wsSrv.start(8044);
-
+var httpSrv = new MockHttpServer(logger);
+mockSvc.registerListener(httpSrv, "http");
+mockSvc.registerResponder(httpSrv, "http");
+httpSrv.start(8046);
 
 //------static http for testing against ------
 

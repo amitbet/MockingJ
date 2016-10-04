@@ -58,7 +58,12 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         action: MockResponse, // the response dictated by the chosen step
         session: MockServerIds) {
         let ws = this._socketMap[session.socketId];
-        ws.send(JSON.stringify(action));
+        if (!ws) {
+            this._logger.error("can't find a socket for session: %s, check scenario validity / disconnections.", session.socketId);
+        }
+        else {
+            ws.send(JSON.stringify(action.response));
+        }
     }
 
     /**
@@ -69,6 +74,7 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         delete this._socketMap[session.socketId];
         ws.close(1006); // 1006 - CLOSE_ABNORMAL
     }
+    
     /**
      * web socket close handler
      */

@@ -5,6 +5,5 @@ export interface HttpMessageData {
     method?: string;
     headers: _.Dictionary<any>;//{ [key: string]: any }
     body: string;
-    time: Date;
     status?:number; //http status (200)
 }

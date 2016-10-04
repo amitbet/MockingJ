@@ -1,0 +1,85 @@
+{
+  "stepPool": [
+    {
+      "requestConditions": {
+        "method": "GET",
+        "url": "/",
+        "headers": {
+        },
+        "body": null
+      },
+      "type": "http",
+      "actions": [
+        {
+          "response": {
+            "status": 200,
+            "headers": {
+              "date": "Tue, 04 Oct 2016 22:00:07 GMT",
+              "connection": "close",
+              "content-length": "22"
+            },
+            "url": "/",
+            "body": "It Works!! Path Hit: /"
+          },
+          "type": "http"
+        }
+      ],
+      "id": "httpSession**S1JdIi-A"
+    },
+    {
+      "requestConditions": {
+        "method": "GET",
+        "url": "/favicon.ico",
+        "headers": {
+        },
+        "body": null
+      },
+      "type": "http",
+      "actions": [
+        {
+          "response": {
+            "status": 200,
+            "headers": {
+              "date": "Tue, 04 Oct 2016 22:00:07 GMT",
+              "connection": "close",
+              "content-length": "33"
+            },
+            "url": "/favicon.ico",
+            "body": "It Works!! Path Hit: /favicon.ico"
+          },
+          "type": "http"
+        }
+      ],
+      "id": "httpSession**rJeJuUs-C"
+    },
+    {
+      "requestConditions": {
+        "uid": 3,
+        "stam": "11",
+        "a": "s2"
+      },
+      "type": "ws",
+      "actions": [
+        {
+          "response": {
+            "uid": 3,
+            "a": "good33"
+          },
+          "type": "ws"
+        }
+      ],
+      "id": "SyBC8jbC**3"
+    }
+  ],
+  "scenarios": [
+    {
+      "steps": [
+        "httpSession**S1JdIi-A",
+        "httpSession**rJeJuUs-C"
+      ],
+      "fallbackSteps": [],
+      "weight": 1,
+      "id": "httpSession"
+    }
+  ]
+}

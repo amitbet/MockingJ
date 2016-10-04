@@ -57,7 +57,6 @@ export class MockRecorder {
             headers: res.headers,
             url: res.req.path,
             body: null,
-            time: new Date()
         };
         var body = '';
 
@@ -78,9 +77,8 @@ export class MockRecorder {
         var descObj: HttpMessageData = {
             method: httpMessage.method,
             url: httpMessage.url,
-            headers: httpMessage.headers,
+            headers: [],
             body: null,
-            time: new Date()
         };
         var bodyObj;
         if (httpMessage.method == 'POST' || httpMessage.method == 'PUT') {

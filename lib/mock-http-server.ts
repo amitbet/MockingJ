@@ -49,7 +49,7 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
             method: httpMessage.method,
             url: httpMessage.url,
             headers: httpMessage.headers,
-            time: new Date(),
+           // time: new Date(),
             body: null
         };
         var bodyObj;
@@ -121,6 +121,8 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
         session: MockServerIds) {
         let res = this._socketMap[session.socketId];
         delete this._socketMap[session.socketId];
-        res.end(JSON.stringify(action));
+
+        let resInfo:HttpMessageData = action.response;
+        res.end(JSON.stringify(resInfo.body));
     }
 }
