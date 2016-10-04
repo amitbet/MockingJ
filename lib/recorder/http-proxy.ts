@@ -15,7 +15,7 @@ export class HttpProxy extends EventEmitter {
 
         proxy.on('proxyRes', (proxyRes, req: http.IncomingMessage, res: http.ServerResponse) => {
             //TODO: session extraction (find a real session)
-            let sessionId = shortid.generate();
+            let sessionId = "httpSession";//shortid.generate();
             this.emit('outgoing', proxyRes, req, sessionId);
         });
 

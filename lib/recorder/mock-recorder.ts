@@ -8,6 +8,7 @@ import http = require('http');
 import _ = require("lodash");
 import {HttpMessageData} from "../http-message-data";
 import fs = require("fs");
+var shortid = require("shortid");
 
 export interface MockRecorderConfiguration {
     wsProxyPort?: number;
@@ -112,12 +113,12 @@ export class MockRecorder {
         // });
     }
     private handleOutgoingHttp(res: any, req: http.IncomingMessage, sessionId: string) {
-        this.processHttpRequest(req, (info) => {
-            console.log("in: ", JSON.stringify(info));
-            this.processHttpResponse(res, (info) => {
-                console.log("out: ", JSON.stringify(info));
+        this.processHttpRequest(req, (reqInfo) => {
+            console.log("in: ", JSON.stringify(reqInfo));
+            this.processHttpResponse(res, (resInfo) => {
+                console.log("out: ", JSON.stringify(resInfo));
 
-                let matchId = "1";
+                let matchId = shortid.generate();
                 let reqId = sessionId + "**" + matchId;
                 let matchingReq = req;
 
@@ -127,20 +128,21 @@ export class MockRecorder {
                 }
 
                 let step: MockStep = {
-                    requestConditions: matchingReq, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
+                    requestConditions: reqInfo, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
                     //delay - time to wait in millisecs before performing any actions
                     type: "http", //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
                     actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
                     id: reqId,
-                //    isFallback: false
+                    //    isFallback: false
                 };
 
                 let mRes: MockResponse = {
-                    response: res, // the response to send
+                    response: resInfo, // the response to send
                     //delay - time to wait in millisecs before sending response
                     type: "http" //"amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
                     //name - an optional name, for logging & debugging
                 }
+                step.actions.push(mRes);
 
                 this._scenarioRepo.addStep(sessionId, step);
 
@@ -162,7 +164,9 @@ export class MockRecorder {
         let matchingReq = this._pendingRequests[reqId];
         if (!matchingReq) {
             matchingReq = this._latestRequests[sessionId];
+            reqId = sessionId;
         }
+
         if (!matchingReq) {
             this._logger.error("MockRecorder handleOutgoingWs: response without matching request: ", res);
             return;
@@ -174,7 +178,7 @@ export class MockRecorder {
             type: "ws", //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
             actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
             id: reqId,
-          //  isFallback: false
+            //  isFallback: false
         };
 
         let mRes: MockResponse = {
