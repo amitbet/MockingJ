@@ -5,14 +5,13 @@ import {ScenarioRepo} from "./scenario-repo";
 import {EventEmitter} from "events";
 
 export interface MockServerIds {
-    sessionId: string;
-    socketId: string;
+    sessionId: string; // id of the session with current client (can span multiple requests & multiple socket connections)
+    socketId: string; // id of the client socket (or http response)
 }
 
 export interface MockSessionInfo {
-    scenarioId: string;
-    scenarioPos: number;
-    sessionId: string;
+    scenarioId: string; // scenario id in the repo
+    scenarioPos: number; // position for serial steps in the scenario (not counting fallback steps)
 }
 
 /**
@@ -46,26 +45,30 @@ export class MockService {
     }
 
     /**
-  * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
-  */
+     * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
+     */
     private getStepFromScenario(ids: MockServerIds, msgObj: any): MockStep {
         let mockScenario: any;
         let resMsg: any;
         let session = this._sessionMap[ids.sessionId];
-        
+
         //TODO: think of session end behaviour...
 
         //session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
-        if (!session.scenarioId) {
-            session.scenarioId = this.scenarios.getRandomScenarioByWeight().id;
-            session.scenarioPos = 0;
+        if (!session) {
+            session = {
+                scenarioId: this.scenarios.getRandomScenarioByWeight().id,
+                scenarioPos: 0
+            };
+            this._sessionMap[ids.sessionId] = session;
         }
+
         //get the step from the scenario
-        var step = this.scenarios.getStepByNumber(session.scenarioId, session.scenarioPos, msgObj);
-        if (!step.isFallback)
+        var scStep = this.scenarios.getStepByNumber(session.scenarioId, session.scenarioPos, msgObj);
+        if (!scStep.isFallback)
             ++session.scenarioPos;
 
-        return step;
+        return scStep.step;
     }
 
     private _responders: _.Dictionary<MockResponder> = {};
@@ -78,7 +81,7 @@ export class MockService {
             return;
         }
 
-        responder.sendMockResponse(message, response, session);
+        responder.sendMockResponse(message, response.response, session);
     }
 
     public registerResponder(responder: MockResponder, type: string) {

@@ -23,8 +23,8 @@ export class MockRecorder {
     private _wsProxy: WsProxy;
     private _httpProxy: HttpProxy;
     private _scenarioRepo: ScenarioRepo;
-    private _pendingRequests: _.Dictionary<any>;
-    private _latestRequests: _.Dictionary<any>;;
+    private _pendingRequests: _.Dictionary<any> = {};
+    private _latestRequests: _.Dictionary<any> = {};
     constructor(private _configObj: MockRecorderConfiguration, private _logger) {
         this._configObj.matchWsField = this._configObj.matchWsField || "uid";
     }
@@ -132,7 +132,7 @@ export class MockRecorder {
                     type: "http", //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
                     actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
                     id: reqId,
-                    isFallback: false
+                //    isFallback: false
                 };
 
                 let mRes: MockResponse = {
@@ -174,7 +174,7 @@ export class MockRecorder {
             type: "ws", //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
             actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
             id: reqId,
-            isFallback: false
+          //  isFallback: false
         };
 
         let mRes: MockResponse = {
@@ -183,6 +183,7 @@ export class MockRecorder {
             type: "ws" //"amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
             //name - an optional name, for logging & debugging
         }
+        step.actions.push(mRes);
 
         this._scenarioRepo.addStep(sessionId, step);
 
@@ -224,3 +225,5 @@ var mr = new MockRecorder({
     httpProxyTarget: "http://localhost:8045",
     listeners: "both"
 }, logger);
+
+mr.start("./scenarioRecording.json");

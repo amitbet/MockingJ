@@ -5,7 +5,6 @@ export interface MockStep {
     type: string; //"amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
     actions?: Array<MockResponse>; // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
     id: string;
-    isFallback?: boolean;
 }
 
 export interface MockResponse {

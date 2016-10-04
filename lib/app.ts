@@ -32,15 +32,15 @@ wsSrv.start(8044);
 //------static http for testing against ------
 
 //We need a function which handles requests and send response
-// function handleRequest(request, response) {
-//     response.end('It Works!! Path Hit: ' + request.url);
-// }
+function handleRequest(request, response) {
+    response.end('It Works!! Path Hit: ' + request.url);
+}
 
-// //Create a server
-// var server = http.createServer(handleRequest);
+//Create a server
+var server = http.createServer(handleRequest);
 
-// //Lets start our server
-// server.listen(8045, function () {
-//     //Callback triggered when server is successfully listening. Hurray!
-//     console.log("Server listening on: http://localhost:%s", 8045);
-// });
+//Lets start our server
+server.listen(8045, function () {
+    //Callback triggered when server is successfully listening. Hurray!
+    console.log("Server listening on: http://localhost:%s", 8045);
+});

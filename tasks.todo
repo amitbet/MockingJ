@@ -1,7 +1,7 @@
 
 Todo list:
 ☐ (main mock service) Think of session end behaviour, should we rechoose and get another scenario / should we stay with the fallback steps / close the ws conn?
-☐ Think of scenario choice, should it be according to protocol type? (matching might take care of that, should we choose by message matching and not only lottery?)
+☐ Think of scenario choice for mock replay, should it be according to protocol type? (matching might take care of that, should we choose by message matching and not only lottery?)
 ☐ (mock http server) Create session exractor for HTTP: Setting the sessionId to be the same as socketId is bad - since it limits the scenario length to one (req->response), we should have some extrction routine to find the session in Http headers / url / cookie
 ✔ (recorder) complete the recorder by mapping "uid" and req/res & processing the messages into a scenario-repo, then saving it. @done (10/4/2016, 1:24:31 AM)
 ☐ (recorder) think of refactoring the recorder to be more similar to the mock service

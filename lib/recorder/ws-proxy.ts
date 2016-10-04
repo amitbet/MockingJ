@@ -53,12 +53,12 @@ export class WsProxy extends EventEmitter {
             });
 
             incoming.on('message', (msg) => {
-                this.emit('incoming', msg, sessionId);
+                this.emit('incoming', JSON.parse(msg), sessionId);
                 open ? outgoing.send(msg) : queue.push(msg);
             });
 
             outgoing.on('message', (msg) => {
-                this.emit('outgoing', msg, sessionId);
+                this.emit('outgoing', JSON.parse(msg), sessionId);
                 incoming.send(msg);
             });
         });

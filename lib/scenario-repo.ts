@@ -10,6 +10,11 @@ export interface Scenario {
     id: string;
 }
 
+export interface ScenarioStep {
+    step: MockStep;
+    isFallback: boolean;
+}
+
 export class ScenarioRepo {
     //private stepPool: {};
     private _scenarios: Array<Scenario> = [];
@@ -60,8 +65,25 @@ export class ScenarioRepo {
         this._lottery[this._maxLotteryTicket] = sc;
     }
 
-    public addStep(scenarioId: string, step: MockStep) {
+    public addStep(scenarioId: string, step: MockStep, isFallback = false) {
         this._stepLex.addOrUpdateStep(step);
+        let existingScenario = this._nameMap[scenarioId];
+        if (!existingScenario) {
+            let sc: Scenario = {
+                steps: [],//array of step names
+                fallbackSteps: [],
+                weight: 1,
+                id: scenarioId
+            };
+            this.addScenario(sc);
+            existingScenario = sc;
+        }
+        if (isFallback)
+            existingScenario.fallbackSteps.push(step.id);
+        else
+            existingScenario.steps.push(step.id);
+
+
     }
 
     /**
@@ -80,13 +102,15 @@ export class ScenarioRepo {
         return retval;
     }
 
+
     /**
      * returns a step by the given scenario and step index
      * all resolution and cloning routines are run on the possible step responses before returning it.
      */
-    public getStepByNumber(scenarioName: string, stepIndex: number, request: any): MockStep {
+    public getStepByNumber(scenarioName: string, stepIndex: number, request: any): ScenarioStep {
         if (!scenarioName)
             this._logger.error("ScenarioRepo.getStepByNumber: scenarioId should be defined");
+        let isFallback = false;
 
         if (!stepIndex && stepIndex != 0) {
             this._logger.warn("ScenarioRepo.getStepByNumber: stepIndex not defined, will try to use fallback");
@@ -102,11 +126,14 @@ export class ScenarioRepo {
                 //if this step was a match return it.
                 if (fStep) {
                     step = fStep;
-                    step.isFallback = true;
+                    isFallback = true;
                     return false;
                 }
             });
         }
-        return step;
+
+        let retVal: ScenarioStep = { step: step, isFallback: isFallback };
+        return retVal;
     }
 }
+
