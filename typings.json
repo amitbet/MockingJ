@@ -5,7 +5,6 @@
   "dependencies": {
     "http-proxy": "registry:npm/http-proxy#1.12.0+20160315230223",
     "lodash": "registry:npm/lodash#4.0.0+20160723033700",
-    "node-uuid": "registry:npm/node-uuid#1.4.7+20160723033700",
     "request": "registry:npm/request#2.69.0+20160428223725"
   },
   "globalDependencies": {

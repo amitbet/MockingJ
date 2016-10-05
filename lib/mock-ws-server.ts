@@ -1,18 +1,14 @@
 import * as WebSocket from "ws";
-import Uuid = require("node-uuid");
+var shortid = require("shortid");
 import _ = require("lodash");
 import {MockResponse} from "./mock-step";
 import {EventEmitter} from "events";
 import {MockServerIds, MockListener, MockResponder} from "./mock-service";
 
 export class MockWsServer extends EventEmitter implements MockListener, MockResponder {
-    private wss: WebSocket.Server;
-
     public listening: boolean;
-
+    private wss: WebSocket.Server;
     private _socketMap: _.Dictionary<WebSocket> = {};
-
-    private configObj: any;
 
     constructor(private _logger) {
         super();
@@ -30,7 +26,7 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         }
 
         this.wss.on("connection", (ws: WebSocket) => {
-            let ids: MockServerIds = { sessionId: Uuid.v4(), socketId: "" };
+            let ids: MockServerIds = { sessionId: shortid.generate(), socketId: "" };
 
             // since this is a websocket, we assume (for now) that the socket will last the whole session
             ids.socketId = ids.sessionId;
@@ -42,9 +38,7 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         });
     }
 
-    private onWebsocketMessage(session: MockServerIds, ws: WebSocket, message: any) {
-        this.emit('incoming', session, JSON.parse(message));
-    }
+
 
     public stop() {
         try {
@@ -54,8 +48,9 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
             this._logger.error("MockWsServer.stop, error while closing server: ", err);
         }
     }
-    public sendMockResponse(originalMessage: any, // the request information
-        action: MockResponse, // the response dictated by the chosen step
+    public sendMockResponse(
+        originalMessage: any, // the request information
+        action: MockResponse,// the response dictated by the chosen step 
         session: MockServerIds) {
         let ws = this._socketMap[session.socketId];
         if (!ws) {
@@ -66,6 +61,9 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         }
     }
 
+    private onWebsocketMessage(session: MockServerIds, ws: WebSocket, message: any) {
+        this.emit("incoming", session, JSON.parse(message));
+    }
     /**
      * web socket error handler
      */
@@ -74,7 +72,7 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         delete this._socketMap[session.socketId];
         ws.close(1006); // 1006 - CLOSE_ABNORMAL
     }
-    
+
     /**
      * web socket close handler
      */

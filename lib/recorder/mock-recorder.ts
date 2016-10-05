@@ -1,14 +1,13 @@
 import {WsProxy} from "./ws-proxy";
 import {HttpProxy} from "./http-proxy";
-import qs = require("querystring");
 import {ScenarioRepo} from "../scenario-repo";
 import {MockStep, MockResponse} from "../mock-step";
 import {SimpleLogger} from "../simple-logger";
 import http = require("http");
 import _ = require("lodash");
-import {HttpMessageData} from "../http-message-data";
 import fs = require("fs");
 var shortid = require("shortid");
+import {HttpUtils} from "../http-utils";
 
 export interface MockRecorderConfiguration {
     wsProxyPort?: number;
@@ -16,7 +15,7 @@ export interface MockRecorderConfiguration {
     wsProxyTarget?: string;
     httpProxyTarget?: string;
     listeners: "ws" | "http" | "both";
-
+    recordHttpHeaders?: boolean;
     matchWsField?: string; // default is uid
 }
 
@@ -28,6 +27,9 @@ export class MockRecorder {
     private _latestRequests: _.Dictionary<any> = {};
     constructor(private _configObj: MockRecorderConfiguration, private _logger) {
         this._configObj.matchWsField = this._configObj.matchWsField || "uid";
+
+        // set default explicitly to false
+        this._configObj.recordHttpHeaders = this._configObj.recordHttpHeaders || false;
     }
 
 
@@ -63,69 +65,15 @@ export class MockRecorder {
         }
     }
 
-    private processHttpResponse(res: any, callback: (result: HttpMessageData) => void): any {
-        var descObj: HttpMessageData = {
-            status: res.statusCode,
-            headers: res.headers,
-            url: res.req.path,
-            body: null,
-        };
-        var body = "";
-
-        // console.log('STATUS: ' + res.statusCode);
-        // console.log('HEADERS: ' + JSON.stringify(res.headers));
-        // res.setEncoding('utf8');
-        res.on("data", (chunk) => {
-            body += chunk;
-        });
-
-        res.on("end", function () {
-            descObj.body = body;
-            callback(descObj);
-        });
-    }
-
-    private processHttpRequest(httpMessage: any, callback: (result: HttpMessageData) => void) {
-        var descObj: HttpMessageData = {
-            method: httpMessage.method,
-            url: httpMessage.url,
-            headers: [],
-            body: null,
-        };
-        var bodyObj;
-        if (httpMessage.method === "POST" || httpMessage.method === "PUT") {
-            httpMessage.setEncoding("utf8");
-            var body = "";
-            httpMessage.on("data", function (data) {
-                body += data;
-                // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-                // if (body.length > 1e6) {
-                //     // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-                //     req.connection.destroy();
-                // }
-            });
-            httpMessage.on("end", function () {
-                bodyObj = qs.parse(body);
-                callback(descObj);
-                // console.log(JSON.stringify(descObj));
-                // use POST
-            });
-            descObj.body = bodyObj;
-        }
-        else {
-            callback(descObj);
-            // console.log(JSON.stringify(descObj));
-        }
-    }
-    private handleIncomingHttp(req) {
-        // this.processHttpRequest(req, (info) => {
-        //     console.log("in: ", JSON.stringify(info));
-        // });
-    }
+    // private handleIncomingHttp(req) {
+    //      this.processHttpRequest(req, (info) => {
+    //          console.log("in: ", JSON.stringify(info));
+    //      });
+    // }
     private handleOutgoingHttp(res: any, req: http.IncomingMessage, sessionId: string) {
-        this.processHttpRequest(req, (reqInfo) => {
+        HttpUtils.processHttpRequest(req, (reqInfo) => {
             this._logger.debug("in: ", JSON.stringify(reqInfo));
-            this.processHttpResponse(res, (resInfo) => {
+            HttpUtils.processHttpResponse(res, (resInfo) => {
                 this._logger.debug("out: ", JSON.stringify(resInfo));
 
                 let matchId = shortid.generate();
@@ -207,7 +155,7 @@ export class MockRecorder {
     private createHttpListener() {
         this._httpProxy = new HttpProxy(this._configObj.httpProxyTarget);
         this._httpProxy.start(this._configObj.httpProxyPort);
-        this._httpProxy.on("incoming", this.handleIncomingHttp.bind(this));
+        // this._httpProxy.on("incoming", this.handleIncomingHttp.bind(this));
         this._httpProxy.on("outgoing", this.handleOutgoingHttp.bind(this));
     };
     private createWsListener() {
@@ -218,7 +166,7 @@ export class MockRecorder {
     };
 
     private removeHttpListener() {
-        this._httpProxy.removeListener("incoming", this.handleIncomingHttp);
+        // this._httpProxy.removeListener("incoming", this.handleIncomingHttp);
         this._httpProxy.removeListener("outgoing", this.handleOutgoingHttp);
         this._httpProxy.stop();
         this._httpProxy = null;

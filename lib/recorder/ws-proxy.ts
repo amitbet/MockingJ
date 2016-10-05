@@ -1,9 +1,8 @@
-import * as util from 'util';
-import ws = require('ws');
-import {EventEmitter} from 'events';
+import ws = require("ws");
+import {EventEmitter} from "events";
 var WebSocketServer = ws.Server;
-var Uuid = require("node-uuid");
-var shortid = require('shortid');
+var shortid = require("shortid");
+
 export class WsProxy extends EventEmitter {
     private server;
 
@@ -20,11 +19,11 @@ export class WsProxy extends EventEmitter {
     public start(port: number, host?: string) {
 
         function listening() {
-            this.emit('listening');
+            this.emit("listening");
         }
 
-        if (typeof arguments[arguments.length - 1] == 'function') {
-            this.on('listening', arguments[arguments.length - 1]);
+        if (typeof arguments[arguments.length - 1] === "function") {
+            this.on("listening", arguments[arguments.length - 1]);
         }
 
         if (this.server) {
@@ -38,13 +37,13 @@ export class WsProxy extends EventEmitter {
 
         this.server = new WebSocketServer(serverConfig, listening);
 
-        this.server.on('connection', (incoming) => {
+        this.server.on("connection", (incoming) => {
             let sessionId = shortid.generate();
             let outgoing = new ws(this._target),
                 open = false,
                 queue = [];
 
-            outgoing.on('open', () => {
+            outgoing.on("open", () => {
                 open = true;
                 let item;
                 while (item = queue.shift()) {
@@ -52,13 +51,13 @@ export class WsProxy extends EventEmitter {
                 }
             });
 
-            incoming.on('message', (msg) => {
-                this.emit('incoming', JSON.parse(msg), sessionId);
+            incoming.on("message", (msg) => {
+                this.emit("incoming", JSON.parse(msg), sessionId);
                 open ? outgoing.send(msg) : queue.push(msg);
             });
 
-            outgoing.on('message', (msg) => {
-                this.emit('outgoing', JSON.parse(msg), sessionId);
+            outgoing.on("message", (msg) => {
+                this.emit("outgoing", JSON.parse(msg), sessionId);
                 incoming.send(msg);
             });
         });
@@ -68,7 +67,7 @@ export class WsProxy extends EventEmitter {
         if (!this.server) {
             throw new Error("Not running");
         }
-        this.emit('closing');
+        this.emit("closing");
         this.server.close();
         this.server = null;
     };

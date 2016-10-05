@@ -19,11 +19,9 @@ var repoJson = repo.toJson();
 fs.writeFileSync("./scenarios/test.json", repoJson);
 
 
-// -- ger config and run a MockService instance
-//let configObj;
-
+// -- run a MockService instance
 var mockSvc = new MockService(["./scenarios/wsScenario.json"], logger);
-//var mockSvc = new MockService(["./scenarios/httpScenario.json"], logger);
+// var mockSvc = new MockService(["./scenarios/httpScenario.json"], logger);
 
 var wsSrv = new MockWsServer(logger);
 mockSvc.registerListener(wsSrv, "ws");
@@ -34,18 +32,15 @@ mockSvc.registerListener(httpSrv, "http");
 mockSvc.registerResponder(httpSrv, "http");
 httpSrv.start(8046);
 
-//------static http for testing against ------
+// ------static http for testing against ------
 
-//We need a function which handles requests and send response
-function handleRequest(request, response) {
-    response.end('It Works!! Path Hit: ' + request.url);
-}
+// We need a function which handles requests and send response
 
-//Create a server
-var server = http.createServer(handleRequest);
-
-//Lets start our server
+// Create and start the http server
+var server = http.createServer((request, response) => {
+    response.end("It Works!! Path Hit: " + request.url);
+});
 server.listen(8045, function () {
-    //Callback triggered when server is successfully listening. Hurray!
+    // Callback triggered when server is successfully listening. Hurray!
     console.log("Server listening on: http://localhost:%s", 8045);
 });

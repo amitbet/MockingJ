@@ -20,8 +20,7 @@ export interface MockSessionInfo {
 export interface MockListener extends EventEmitter {
     start(port: number, host?: string): void;
     stop();
-    listening: boolean;
-    //should also provide an event for 'incoming' with the appropriate message & session.
+    // should also provide an event for 'incoming' with the appropriate message & session.
 }
 
 /**
@@ -37,51 +36,14 @@ export interface MockResponder {
 export class MockService {
     private scenarios: ScenarioRepo = new ScenarioRepo(this._logger);
     private _sessionMap: _.Dictionary<MockSessionInfo> = {};
+    private _responders: _.Dictionary<MockResponder> = {};
+    private _listeners: _.Dictionary<MockListener> = {};
+
     constructor(scenarioFiles: Array<string>, private _logger: any) {
         // load all data files
         for (let sf in scenarioFiles) {
             this.scenarios.loadDataFile(scenarioFiles[sf]);
         }
-    }
-
-    /**
-     * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
-     */
-    private getStepFromScenario(ids: MockServerIds, msgObj: any): MockStep {
-        let mockScenario: any;
-        let resMsg: any;
-        let session = this._sessionMap[ids.sessionId];
-
-        //TODO: think of session end behaviour...
-
-        //session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
-        if (!session) {
-            session = {
-                scenarioId: this.scenarios.getRandomScenarioByWeight().id,
-                scenarioPos: 0
-            };
-            this._sessionMap[ids.sessionId] = session;
-        }
-
-        //get the step from the scenario
-        var scStep = this.scenarios.getStepByNumber(session.scenarioId, session.scenarioPos, msgObj);
-        if (!scStep.isFallback)
-            ++session.scenarioPos;
-
-        return scStep.step;
-    }
-
-    private _responders: _.Dictionary<MockResponder> = {};
-    private _listeners: _.Dictionary<MockListener> = {};
-
-    private handleResponse(response: MockResponse, type: string, message: any, session: MockServerIds) {
-        let responder = this._responders[type];
-        if (!responder) {
-            this._logger.error("no responder registered for type: ", type);
-            return;
-        }
-
-        responder.sendMockResponse(message, response, session);
     }
 
     public registerResponder(responder: MockResponder, type: string) {
@@ -97,7 +59,43 @@ export class MockService {
         }
 
         this._listeners[type] = listener;
-        listener.on('incoming', this.handleIncomingMessage.bind(this))
+        listener.on("incoming", this.handleIncomingMessage.bind(this));
+    }
+
+   /**
+     * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
+     */
+    private getStepFromScenario(ids: MockServerIds, msgObj: any): MockStep {
+        let session = this._sessionMap[ids.sessionId];
+
+        // TODO: think of session end behaviour...
+
+        // session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
+        if (!session) {
+            session = {
+                scenarioId: this.scenarios.getRandomScenarioByWeight().id,
+                scenarioPos: 0
+            };
+            this._sessionMap[ids.sessionId] = session;
+        }
+
+        // get the step from the scenario
+        var scStep = this.scenarios.getStepByNumber(session.scenarioId, session.scenarioPos, msgObj);
+        if (!scStep.isFallback)
+            ++session.scenarioPos;
+
+        return scStep.step;
+    }
+
+
+    private handleResponse(response: MockResponse, type: string, message: any, session: MockServerIds) {
+        let responder = this._responders[type];
+        if (!responder) {
+            this._logger.error("no responder registered for type: ", type);
+            return;
+        }
+
+        responder.sendMockResponse(message, response, session);
     }
 
     /**
@@ -109,17 +107,13 @@ export class MockService {
         let msgObj = message;
 
         try {
-            // msgObj = JSON.parse(message);
-
-
-            let resMsg: any;
 
             let step = this.getStepFromScenario(session, msgObj);
             if (step && step.actions) {
                 _.forEach(step.actions, (action, key) => {
                     this._logger.trace(functionName + "sending: %s", JSON.stringify(action.response));
 
-                    //if no action type exists, inherit it
+                    // if no action type exists, inherit it
                     let aType = action.type || step.type;
 
                     // calculate delay
