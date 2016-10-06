@@ -2,7 +2,7 @@ import {WsProxy} from "./ws-proxy";
 import {HttpProxy} from "./http-proxy";
 import {ScenarioRepo} from "../scenario-repo";
 import {MockStep, MockResponse} from "../mock-step";
-import {SimpleLogger} from "../simple-logger";
+import {SimpleLogger, ILogger} from "../simple-logger";
 import http = require("http");
 import _ = require("lodash");
 import fs = require("fs");
@@ -25,7 +25,7 @@ export class MockRecorder {
     private _scenarioRepo: ScenarioRepo;
     private _pendingRequests: _.Dictionary<any> = {};
     private _latestRequests: _.Dictionary<any> = {};
-    constructor(private _configObj: MockRecorderConfiguration, private _logger) {
+    constructor(private _configObj: MockRecorderConfiguration, private _logger: ILogger = new SimpleLogger()) {
         this._configObj.matchWsField = this._configObj.matchWsField || "uid";
 
         // set default explicitly to false

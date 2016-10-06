@@ -3,6 +3,7 @@ import _ = require("lodash");
 import {MockStep, MockResponse} from "./mock-step";
 import {ScenarioRepo} from "./scenario-repo";
 import {EventEmitter} from "events";
+import {SimpleLogger, ILogger} from "./simple-logger";
 
 export interface MockServerIds {
     sessionId: string; // id of the session with current client (can span multiple requests & multiple socket connections)
@@ -39,7 +40,7 @@ export class MockService {
     private _responders: _.Dictionary<MockResponder> = {};
     private _listeners: _.Dictionary<MockListener> = {};
 
-    constructor(scenarioFiles: Array<string>, private _logger: any) {
+    constructor(scenarioFiles: Array<string>, private _logger: ILogger = new SimpleLogger()) {
         // load all data files
         for (let sf in scenarioFiles) {
             this.scenarios.loadDataFile(scenarioFiles[sf]);
@@ -62,9 +63,9 @@ export class MockService {
         listener.on("incoming", this.handleIncomingMessage.bind(this));
     }
 
-   /**
-     * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
-     */
+    /**
+      * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
+      */
     private getStepFromScenario(ids: MockServerIds, msgObj: any): MockStep {
         let session = this._sessionMap[ids.sessionId];
 

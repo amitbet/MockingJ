@@ -8,7 +8,7 @@
     "request": "registry:npm/request#2.69.0+20160428223725"
   },
   "globalDependencies": {
-    "node": "registry:dt/node#4.0.0+20160510211532",
+    "node": "registry:env/node#6.0.0+20160918225031",
     "ws": "registry:dt/ws#0.0.0+20161003184106"
   }
 }

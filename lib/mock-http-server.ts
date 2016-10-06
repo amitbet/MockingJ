@@ -6,13 +6,14 @@ import {EventEmitter} from "events";
 import {MockServerIds, MockListener, MockResponder} from "./mock-service";
 import {HttpMessageData} from "./http-message-data";
 import {HttpUtils} from "./http-utils";
+import {ILogger, SimpleLogger} from "./simple-logger";
 
 // for http client
 import * as request from "request";
 
 export class MockHttpClient extends EventEmitter implements MockResponder {
 
-    constructor(private _logger) {
+    constructor(private _logger: ILogger = new SimpleLogger()) {
         super();
     }
 
@@ -90,9 +91,9 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
             });
 
             // Lets start our server
-            this._server.listen(port, function () {
+            this._server.listen(port, () => {
                 // Callback triggered when server is successfully listening. Hurray!
-                console.log("Server listening on: http://localhost:%s", 8045);
+                this._logger.debug("Server listening on: http://localhost:%s", 8045);
                 this.listening = true;
             });
             // this._server = new http.Server(options);

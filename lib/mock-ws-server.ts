@@ -4,13 +4,14 @@ import _ = require("lodash");
 import {MockResponse} from "./mock-step";
 import {EventEmitter} from "events";
 import {MockServerIds, MockListener, MockResponder} from "./mock-service";
+import {ILogger, SimpleLogger} from "./simple-logger";
 
 export class MockWsServer extends EventEmitter implements MockListener, MockResponder {
     public listening: boolean;
     private wss: WebSocket.Server;
     private _socketMap: _.Dictionary<WebSocket> = {};
 
-    constructor(private _logger) {
+    constructor(private _logger: ILogger = new SimpleLogger()) {
         super();
     }
 

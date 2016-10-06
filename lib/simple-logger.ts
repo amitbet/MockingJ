@@ -1,4 +1,14 @@
-export class SimpleLogger {
+
+
+export interface ILogger {
+    error(msg, ...optionalParams: any[]);
+    warn(msg, ...optionalParams: any[]);
+    debug(msg, ...optionalParams: any[]);
+    info(msg, ...optionalParams: any[]);
+    trace(msg, ...optionalParams: any[]);
+}
+
+export class SimpleLogger implements ILogger {
     public error(msg, ...optionalParams: any[]) {
         console.error("error: " + msg, optionalParams);
     }

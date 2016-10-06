@@ -12,7 +12,7 @@ var logger = new SimpleLogger();
 
 // -- tests scenario repo toJson routine --
 var repo: ScenarioRepo = new ScenarioRepo(logger);
-var repoData = fs.readFileSync("./scenarios/MockScenario1.json", "utf8");
+var repoData = fs.readFileSync("./scenarios/wsScenario.json", "utf8");
 repo.fromJson(repoData);
 
 var repoJson = repo.toJson();
