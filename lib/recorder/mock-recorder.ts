@@ -17,6 +17,7 @@ export interface MockRecorderConfiguration {
     listeners: "ws" | "http" | "both";
     recordHttpHeaders?: boolean;
     matchWsField?: string; // default is uid
+    mirrorFields: Array<string>; // fields that should be copied from req to response, and not included in conditions
 }
 
 export class MockRecorder {
@@ -26,7 +27,7 @@ export class MockRecorder {
     private _pendingRequests: _.Dictionary<any> = {};
     private _latestRequests: _.Dictionary<any> = {};
     constructor(private _configObj: MockRecorderConfiguration, private _logger: ILogger = new SimpleLogger()) {
-        this._configObj.matchWsField = this._configObj.matchWsField || "uid";
+        // this._configObj.matchWsField = this._configObj.matchWsField || "uid";
 
         // set default explicitly to false
         this._configObj.recordHttpHeaders = this._configObj.recordHttpHeaders || false;
@@ -85,8 +86,11 @@ export class MockRecorder {
                     return;
                 }
 
+                let requestClone = _.cloneDeep(reqInfo);
+                this.treatMirrorFields(requestClone, true);
+
                 let step: MockStep = {
-                    requestConditions: reqInfo, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
+                    requestConditions: requestClone, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
                     // delay - time to wait in millisecs before performing any actions
                     type: "http", // "amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
                     actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
@@ -94,8 +98,12 @@ export class MockRecorder {
                     //    isFallback: false
                 };
 
+                let responseClone = _.cloneDeep(resInfo);
+
+                this.treatMirrorFields(responseClone, false);
+
                 let mRes: MockResponse = {
-                    response: resInfo, // the response to send
+                    response: responseClone, // the response to send
                     // delay - time to wait in millisecs before sending response
                     type: "http" // "amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
                     // name - an optional name, for logging & debugging
@@ -109,20 +117,82 @@ export class MockRecorder {
         });
     }
 
+    private deepGetValue(obj, path) {
+        var paths = path.split(".");
+        var current = obj;
+
+        var i;
+
+        for (i = 0; i < paths.length; ++i) {
+            if (current[paths[i]] === undefined) {
+                return undefined;
+            } else {
+                current = current[paths[i]];
+            }
+        }
+        return current;
+    }
+
+    private deepApply(obj, path, func) {
+        var paths = path.split(".");
+        var current = obj;
+        var key;
+        var parent;
+        var i;
+
+        for (i = 0; i < paths.length; ++i) {
+            if (current[paths[i]] === undefined) {
+                return undefined;
+            } else {
+                parent = current;
+                key = paths[i];
+                current = current[key];
+            }
+        }
+        func(parent, key, path);
+    }
+
+    private treatMirrorFields(obj: any, del = false) {
+        let treatment;
+
+        if (del) {
+            treatment =
+                (parent, key, path) => {
+                    delete parent[key];
+                };
+        }
+        else {
+            treatment =
+                (parent, key, path) => {
+                    parent[key] = "{{req." + path + "}}";
+                };
+        }
+
+        _.each(this._configObj.mirrorFields, (path) => {
+            this.deepApply(obj, path, treatment);
+        });
+    }
+
     private handleIncomingWs(req: any, sessionId: string) {
-        let matchId = req[this._configObj.matchWsField];
+        let matchId = this.deepGetValue(req, this._configObj.matchWsField);
         this._pendingRequests[sessionId + "**" + matchId] = req;
         this._latestRequests[sessionId] = req;
         this._logger.debug("--->session: %s, ws req: ", sessionId, req);
     }
     private handleOutgoingWs(res: any, sessionId: string) {
 
-        let matchId = res[this._configObj.matchWsField];
+        let matchId = this.deepGetValue(res, this._configObj.matchWsField);
         let reqId = sessionId + "**" + matchId;
         let matchingReq = this._pendingRequests[reqId];
         if (!matchingReq) {
             matchingReq = this._latestRequests[sessionId];
-            reqId = sessionId;
+            if (matchingReq) {
+                let reqMatchId = this.deepGetValue(matchingReq, this._configObj.matchWsField);
+                if (reqMatchId)
+                    reqId = sessionId + "**" + reqMatchId;
+                else
+                    reqId = sessionId;
+            }
         }
 
         if (!matchingReq) {
@@ -130,8 +200,10 @@ export class MockRecorder {
             return;
         }
 
+        let requestClone = _.cloneDeep(matchingReq);
+        this.treatMirrorFields(requestClone, true);
         let step: MockStep = {
-            requestConditions: matchingReq, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
+            requestConditions: requestClone, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
             // delay - time to wait in millisecs before performing any actions
             type: "ws", // "amqp" | "ws" | "http";// a protocol type so we know how to treat condition checking
             actions: [], // actions are steps without conditions that should be performed when step is done (notice that a delay may be also included in each)
@@ -139,8 +211,11 @@ export class MockRecorder {
             //  isFallback: false
         };
 
+        let responseClone = _.cloneDeep(res);
+        this.treatMirrorFields(responseClone, false);
+
         let mRes: MockResponse = {
-            response: res, // the response to send
+            response: responseClone, // the response to send
             // delay - time to wait in millisecs before sending response
             type: "ws" // "amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
             // name - an optional name, for logging & debugging
@@ -186,7 +261,9 @@ var mr = new MockRecorder({
     httpProxyPort: 8000,
     wsProxyTarget: "ws://localhost:8044",
     httpProxyTarget: "http://localhost:8045",
-    listeners: "both"
+    listeners: "both",
+    matchWsField: "uid",
+    mirrorFields: ["uid", "data.data.sessionId", "data.data.sessionInfo.PackageManagerAddress"]
 }, logger);
 
 mr.start("./scenarioRecording.json");

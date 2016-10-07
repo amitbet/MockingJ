@@ -27,8 +27,8 @@ export class StepLexicon {
      * adds a single step
      */
     public addOrUpdateStep(step: MockStep) {
-        let existingStep = this.nameMap[step.id]
-        //if step already exists, add responses to its response array
+        let existingStep = this.nameMap[step.id];
+        // if step already exists, add responses to its response array
         if (existingStep) {
             let idx = existingStep.actions.length;
             _.forEach(step.actions, (act) => {
@@ -37,7 +37,7 @@ export class StepLexicon {
                     ++idx;
                 }
             });
-            existingStep.actions.concat(step.actions);
+            existingStep.actions = existingStep.actions.concat(step.actions);
         }
         else {
             this._stepPool.push(step);
@@ -61,7 +61,7 @@ export class StepLexicon {
      * finds all matching steps (checks requirements on all steps agains given request)
      */
     public findAllMatchingSteps(request: any) {
-        var retval = []
+        var retval = [];
         for (var i = 0; i < this._stepPool.length; i++) {
             let step = this._stepPool[i];
             if (this.matchRequest(step.requestConditions, request)) {
@@ -102,7 +102,7 @@ export class StepLexicon {
             type: step.type,
             actions: newAactions,
             id: step.id
-        }
+        };
         return newStep;
     }
 
@@ -133,35 +133,25 @@ export class StepLexicon {
      * returns a clone of the original object with the new values
      */
     private materializeParams(jsonObj: any, request: any): any {
-        var k;
-        var newJsonObj = jsonObj;
-        if (jsonObj instanceof Object) {
-            newJsonObj = {};
-            for (k in jsonObj) {
-                if (jsonObj.hasOwnProperty(k)) {
-                    // recursive call to scan property
-                    newJsonObj[k] = this.materializeParams(jsonObj[k], request);
-                }
-            }
-        } else {
-            // not an Object so obj[k] here is a value
-            if (typeof jsonObj === "string") {
-                var str: string;
-                str = jsonObj.trim();
-                if (_.startsWith(str, "{{") && _.endsWith(str, "}}")) {
-                    str = _.trim(str, "{}");
 
-                    var valFromEval = this.evalWithContext({ "req": request }, str);
+        function customizer(value) {
+            if (typeof value === "string") {
+                if (_.startsWith(value, "{{") && _.endsWith(value, "}}")) {
+                    value = _.trim(value, "{}");
+
+                    var valFromEval = this.evalWithContext({ "req": request }, value);
 
                     if (valFromEval) {
-                        newJsonObj = valFromEval;
+                        return valFromEval;
                     } else {
-                        newJsonObj = jsonObj + " --not found in env!!--";
+                        return (jsonObj + " --not found in env!!--");
                     }
                 }
             }
+            return undefined;
         }
-        return newJsonObj;
+
+        return _.cloneDeepWith(jsonObj, customizer.bind(this));
     }
 
     /**
@@ -171,6 +161,7 @@ export class StepLexicon {
         function evalInContext() {
             return eval(code);
         }
+        // here for the code undergoing eval (not unused..)
         var req = context.req;
         return evalInContext.call(context);
     }
