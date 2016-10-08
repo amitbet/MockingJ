@@ -8,17 +8,21 @@ import {ILogger, SimpleLogger} from "./simple-logger";
 
 export class MockWsServer extends EventEmitter implements MockListener, MockResponder {
     public listening: boolean;
+    public type: string = "ws";
+    public port: number;
+
     private wss: WebSocket.Server;
     private _socketMap: _.Dictionary<WebSocket> = {};
 
-    constructor(private _logger: ILogger = new SimpleLogger()) {
+    constructor(port: number, private _logger: ILogger = new SimpleLogger()) {
         super();
+        this.port = port;
     }
 
-    public start(port: number, host?: string) {
+    public start(host?: string) {
         // create ws server
         let options: WebSocket.IServerOptions = {};
-        options.port = port;
+        options.port = this.port;
         try {
             this.wss = new WebSocket.Server(options);
             this.listening = true;
@@ -58,7 +62,7 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
             this._logger.error("can't find a socket for session: %s, check scenario validity / disconnections.", session.socketId);
         }
         else {
-            ws.send(JSON.stringify(action.response));
+            ws.send(JSON.stringify(action.body));
         }
     }
 

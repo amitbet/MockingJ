@@ -20,28 +20,17 @@ fs.writeFileSync("./scenarios/test.json", repoJson);
 
 
 // -- run a MockService instance
-// var mockSvc = new MockService(["./scenarios/wsScenario.json"], logger);
+// var mockSvc = new MockService(["./scenarios/wsScenario.json"], [], [], logger);
 // var mockSvc = new MockService(["./scenarios/httpScenario.json"], logger);
+// var mockSvc = new MockService(["./scenarios/remoteAgentScenario.json"], logger);
 
-var wsSrv = new MockWsServer(9032, logger);
-var httpSrv = new MockHttpServer(9030, logger);
+var wsSrv = new MockWsServer(8044, logger);
+var httpSrv = new MockHttpServer(8046, logger);
 var httpClnt = new MockHttpClient(logger);
-var mockSvc = new MockService("./scenarios/remoteAgentScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+// var mockSvc = new MockService("./scenarios/wsScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+var mockSvc = new MockService("./scenarios/httpScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+
 mockSvc.start();
-
-// var wsSrv = new MockWsServer(8044, logger);
-// var httpSrv = new MockHttpServer(8046, logger);
-// var httpClnt = new MockHttpClient(logger);
-// var mockSvc = new MockService(["./scenarios/wsScenario.json"], [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
-// mockSvc.start();
-
-// mockSvc.registerListener(wsSrv, "ws");
-// mockSvc.registerResponder(wsSrv, "ws");
-// wsSrv.start(9032); // 8044
-
-// mockSvc.registerListener(httpSrv, "http");
-// mockSvc.registerResponder(httpSrv, "http");
-// httpSrv.start(9030);// 8046
 
 // ------static http for testing against ------
 

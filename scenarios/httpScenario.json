@@ -4,15 +4,13 @@
       "requestConditions": {
         "method": "GET",
         "url": "/",
-        "headers": {
-        },
+        "headers": {},
         "body": null
       },
       "type": "http",
       "actions": [
         {
-          "response": {
-            "status": 200,
+          "body": {
             "headers": {
               "date": "Tue, 04 Oct 2016 22:00:07 GMT",
               "connection": "close",
@@ -30,23 +28,20 @@
       "requestConditions": {
         "method": "GET",
         "url": "/favicon.ico",
-        "headers": {
-        },
+        "headers": {},
         "body": null
       },
       "type": "http",
       "actions": [
         {
-          "response": {
-            "status": 200,
-            "headers": {
-              "date": "Tue, 04 Oct 2016 22:00:07 GMT",
-              "connection": "close",
-              "content-length": "33"
-            },
-            "url": "/favicon.ico",
-            "body": "It Works!! Path Hit: /favicon.ico"
+          "status": 200,
+          "headers": {
+            "date": "Tue, 04 Oct 2016 22:00:07 GMT",
+            "connection": "close",
+            "content-length": "33"
           },
+          "url": "/favicon.ico",
+          "body": "It Works!! Path Hit: /favicon.ico",
           "type": "http"
         }
       ],
@@ -61,7 +56,7 @@
       "type": "ws",
       "actions": [
         {
-          "response": {
+          "body": {
             "uid": 3,
             "a": "good33"
           },

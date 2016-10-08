@@ -72,9 +72,9 @@ export class MockRecorder {
     //      });
     // }
     private handleOutgoingHttp(res: any, req: http.IncomingMessage, sessionId: string) {
-        HttpUtils.processHttpRequest(req, (reqInfo) => {
+        HttpUtils.processHttpRequest(req, "http", (reqInfo) => {
             this._logger.debug("in: ", JSON.stringify(reqInfo));
-            HttpUtils.processHttpResponse(res, (resInfo) => {
+            HttpUtils.processHttpResponse(res, "http", (resInfo) => {
                 this._logger.debug("out: ", JSON.stringify(resInfo));
 
                 let matchId = shortid.generate();
@@ -103,7 +103,7 @@ export class MockRecorder {
                 this.treatMirrorFields(responseClone, false);
 
                 let mRes: MockResponse = {
-                    response: responseClone, // the response to send
+                    body: responseClone, // the response to send
                     // delay - time to wait in millisecs before sending response
                     type: "http" // "amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
                     // name - an optional name, for logging & debugging
@@ -215,7 +215,7 @@ export class MockRecorder {
         this.treatMirrorFields(responseClone, false);
 
         let mRes: MockResponse = {
-            response: responseClone, // the response to send
+            body: responseClone, // the response to send
             // delay - time to wait in millisecs before sending response
             type: "ws" // "amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
             // name - an optional name, for logging & debugging

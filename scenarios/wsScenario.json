@@ -1,6 +1,51 @@
 {
     "stepPool": [
         {
+            "id": "regInLab",
+            "requestConditions": {},
+            "actions": [
+                {
+                    "headers": {},
+                    "method": "POST",
+                    "url": "http://127.0.0.1:27081/environment/register",
+                    "body": {
+                        "id": "aaaa8f9a-6915-4f96-94f0-435da4b4aaaa",
+                        "host": {
+                            "address": "127.0.0.1",
+                            "wsPort": 9032,
+                            "httpPort": 9030,
+                            "vncPort": 5901
+                        },
+                        "os": {
+                            "name": "OSX",
+                            "version": "16.0.0"
+                        },
+                        "browsers": {
+                            "0": {
+                                "name": "chrome",
+                                "version": "53"
+                            },
+                            "1": {
+                                "name": "firefox",
+                                "version": "38"
+                            },
+                            "2": {
+                                "name": "opera",
+                                "version": "28"
+                            },
+                            "3": {
+                                "name": "safari",
+                                "version": "7"
+                            }
+                        }
+                    },
+                    "type": "httpClient"
+                }
+            ],
+            "delay": 30,
+            "type": "httpClient"
+        },
+        {
             "id": "step1",
             "requestConditions": {
                 "stam": "11",
@@ -8,7 +53,7 @@
             },
             "actions": [
                 {
-                    "response": {
+                    "body": {
                         "uid": "{{req.uid}}",
                         "a": "good1"
                     }
@@ -22,7 +67,7 @@
             "requestConditions": {},
             "actions": [
                 {
-                    "response": {
+                    "body": {
                         "uid": "{{req.uid}}",
                         "a": "good33"
                     }
@@ -37,13 +82,13 @@
             },
             "actions": [
                 {
-                    "response": {
+                    "body": {
                         "uid": "{{req.uid}}",
                         "a": "good2"
                     }
                 },
                 {
-                    "response": {
+                    "body": {
                         "uid": "{{req.uid}}",
                         "b": "good3"
                     }
@@ -55,6 +100,9 @@
     ],
     "scenarios": [
         {
+            "initialSteps": [
+                "regInLab"
+            ],
             "steps": [
                 "step1",
                 "step2"

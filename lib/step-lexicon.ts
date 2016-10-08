@@ -74,12 +74,16 @@ export class StepLexicon {
     /**
      * gets a step by the given step name
      */
-    public getStepByName(stepName: string, request: any): MockStep {
+    public getStepByName(stepName: string, request?: any): MockStep {
         var step: MockStep = this.nameMap[stepName];
         var newStep: MockStep;
 
         if (!step)
             return null;
+       
+        if (!request) {
+            return step;
+        }
 
         if (this.matchRequest(step.requestConditions, request)) {
             newStep = this.cloneAndParametrize(step, request);

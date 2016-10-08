@@ -2,12 +2,31 @@
 import {HttpMessageData} from "./http-message-data";
 
 export class HttpUtils {
-    public static processHttpRequest(httpMessage: any, callback: (result: HttpMessageData) => void, recordHttpHeaders: boolean = false) {
+    public static isJsonStr(value: string, throwException: boolean = false): boolean {
+        if (!value || (typeof value !== "string")) {
+            return false;
+        }
+        if ((value.indexOf("{") === -1) && (value.indexOf("[") === -1)) {
+            return false;
+        }
+        try {
+            JSON.parse(value);
+        } catch (e) {
+            if (throwException) {
+                throw e;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public static processHttpRequest(httpMessage: any, type: string, callback: (result: HttpMessageData) => void, recordHttpHeaders: boolean = false) {
         var descObj: HttpMessageData = {
             method: httpMessage.method,
             url: httpMessage.url,
             headers: [],
-            body: null
+            body: null,
+            type: type || "http"
         };
 
         if (recordHttpHeaders)
@@ -38,12 +57,13 @@ export class HttpUtils {
     }
 
 
-    public static processHttpResponse(res: any, callback: (result: HttpMessageData) => void) {
+    public static processHttpResponse(res: any, type: string, callback: (result: HttpMessageData) => void) {
         var descObj: HttpMessageData = {
             status: res.statusCode,
             headers: res.headers,
             url: res.req.path,
             body: null,
+            type: type || "http"
         };
         var body = "";
 
@@ -62,10 +82,10 @@ export class HttpUtils {
 
     public static getHttpSessionId(request: any, sessionIdfieldName: string): string {
         let sessionId = request.headers[sessionIdfieldName];
-        
+
         if (!sessionId)
             throw new Error("HttpUtils.getHttpSessionId: no session id found in header: " + sessionIdfieldName);
-        
+
         return sessionId;
     }
 }

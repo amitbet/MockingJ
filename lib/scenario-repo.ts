@@ -4,8 +4,10 @@ import fs = require("fs");
 import {MockStep} from "./mock-step";
 
 export interface Scenario {
-    steps: Array<string>;//array of step names
+    steps: Array<string>;// array of step names
     fallbackSteps: Array<string>;
+    initialSteps?: Array<string>;// will be run when scenario is first added (before accepting any messages for this scenario).
+    closeSteps?: Array<string>;// will be performed on scenario/session end
     weight: number;
     id: string;
 }
@@ -16,7 +18,6 @@ export interface ScenarioStep {
 }
 
 export class ScenarioRepo {
-    //private stepPool: {};
     private _scenarios: Array<Scenario> = [];
     private _nameMap: _.Dictionary<Scenario> = {};
     private _lottery: _.Dictionary<Scenario> = {};
@@ -31,7 +32,7 @@ export class ScenarioRepo {
         var retVal = {
             "stepPool": JSON.parse(poolStr),
             "scenarios": this._scenarios
-        }
+        };
         return JSON.stringify(retVal, null, 2);
     }
 
@@ -47,12 +48,13 @@ export class ScenarioRepo {
         }
     }
 
-    public loadDataFile(mockDataFile: string) {
+    public loadDataFile(mockDataFile: string, callback:Function) {
         fs.readFile(mockDataFile, "utf8", (err, data) => {
             if (err) throw err;
             var obj = JSON.parse(data);
             this._stepLex.addSteps(obj.stepPool);
             this.addScenarios(obj.scenarios);
+            callback();
         });
     }
 
@@ -70,7 +72,7 @@ export class ScenarioRepo {
         let existingScenario = this._nameMap[scenarioId];
         if (!existingScenario) {
             let sc: Scenario = {
-                steps: [],//array of step names
+                steps: [],// array of step names
                 fallbackSteps: [],
                 weight: 1,
                 id: scenarioId
@@ -98,8 +100,19 @@ export class ScenarioRepo {
                 retval = this._lottery[key];
                 return retval;
             }
-        })
+        });
         return retval;
+    }
+
+    /**
+     * gets all initial steps that should be performed for this repo on service start.
+     */
+    public getAllInitialSteps(): Array<MockStep> {
+        let allSteps: Array<MockStep> = [];
+        _.forEach(this._scenarios, scenario => {
+            allSteps = allSteps.concat(this.getInitialStepsForScenario(scenario.id));
+        });
+        return allSteps;
     }
 
 
@@ -107,23 +120,23 @@ export class ScenarioRepo {
      * returns a step by the given scenario and step index
      * all resolution and cloning routines are run on the possible step responses before returning it.
      */
-    public getStepByNumber(scenarioName: string, stepIndex: number, request: any): ScenarioStep {
-        if (!scenarioName)
+    public getStepByNumber(scenarioId: string, stepIndex: number, request: any): ScenarioStep {
+        if (!scenarioId)
             this._logger.error("ScenarioRepo.getStepByNumber: scenarioId should be defined");
         let isFallback = false;
 
-        if (!stepIndex && stepIndex != 0) {
+        if (!stepIndex && stepIndex !== 0) {
             this._logger.warn("ScenarioRepo.getStepByNumber: stepIndex not defined, will try to use fallback");
         }
 
-        var scenario: Scenario = this._nameMap[scenarioName];
+        var scenario: Scenario = this._nameMap[scenarioId];
         var stepId = scenario.steps[stepIndex];
         var step = this._stepLex.getStepByName(stepId, request);
         if (!step) {
             // step was not a match or no such step exists, try fallback steps
             _.forEach(scenario.fallbackSteps, (fStepId: string, key: string) => {
                 let fStep: MockStep = this._stepLex.getStepByName(fStepId, request);
-                //if this step was a match return it.
+                // if this step was a match return it.
                 if (fStep) {
                     step = fStep;
                     isFallback = true;
@@ -135,5 +148,28 @@ export class ScenarioRepo {
         let retVal: ScenarioStep = { step: step, isFallback: isFallback };
         return retVal;
     }
+
+    /**
+     * get all initial steps for the given scenario
+     */
+    private getInitialStepsForScenario(scenarioId: string): Array<MockStep> {
+        if (!scenarioId)
+            this._logger.error("ScenarioRepo.getStepByNumber: scenarioId should be defined");
+        var scenario: Scenario = this._nameMap[scenarioId];
+        var steps: Array<MockStep> = [];
+        if (!scenario || !scenario.initialSteps) {
+            steps = [];
+        }
+
+        _.forEach(scenario.initialSteps, (iStepId: string, key: string) => {
+            let iStep: MockStep = this._stepLex.getStepByName(iStepId);
+            if (iStep) {
+                steps.push(iStep);
+            }
+        });
+
+        return steps;
+    }
+
 }
 
