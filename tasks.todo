@@ -11,5 +11,6 @@ Todo list:
 ✔ (replay) test http client responder @done (10/8/2016, 5:03:46 PM)
 ☐ (R&R - closing) add a close connection step for ws / close session for http, in both replay and record
 ☐ (recorder - closing) add ws close connection step recording
-☐ (replay - closing) implement closing scenario when running close session.
+☐ (replay - closing) implement closing steps when running close session/scenario.
+☐ (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
 ☐ (replay) add match step logic by protocol type, do the same for scenario choice by the type of the first step in scenario (collect scenarios matchin first step before running lottery).

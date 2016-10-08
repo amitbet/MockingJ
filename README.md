@@ -31,20 +31,18 @@ This mock service, when run will try to answer any requests with matching respon
 When running a mock Service, you should create a MockService instance, register & run listeners & responders like so:
 
 ```javascript
-// create a MockService instance
-var mockSvc = new MockService(["./scenarios/myScenario.json"]);
+// create listeners & responders:
+var wsSrv = new MockWsServer(8044, logger);
+var httpSrv = new MockHttpServer(8046, logger);
 
-// create WebSockets listener / responder:
-var wsSrv = new MockWsServer();
-mockSvc.registerListener(wsSrv, "ws");
-mockSvc.registerResponder(wsSrv, "ws");
-wsSrv.start(8044);
+// this is only a responder (sends http requests as initial step or in response to something else)
+var httpClnt = new MockHttpClient(logger);
 
-// create http listener / responder:
-var httpSrv = new MockHttpServer();
-mockSvc.registerListener(httpSrv, "http");
-mockSvc.registerResponder(httpSrv, "http");
-httpSrv.start(8046);
+// register all responders and listeners
+var mockSvc = new MockService("./scenarios/httpScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+
+// performs all initial steps, start all listeners.
+mockSvc.start();
 ```
 
 ## Steps and Scenarios: 
