@@ -14,3 +14,4 @@ Todo list:
 ☐ (replay - closing) implement closing steps when running close session/scenario.
 ☐ (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
 ☐ (replay) add match step logic by protocol type, do the same for scenario choice by the type of the first step in scenario (collect scenarios matchin first step before running lottery).
+☐ (replay) add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable)

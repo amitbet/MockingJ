@@ -3,6 +3,7 @@ MockingJ is a new JSON based mock service framework intended to help in conducti
 
 Its main goal is to allow the mocking of any protocol carrying a JSON payload.
 Out of the box it supports:
+
 * WebSockets
 * Http (REST)
 * RabbitMQ
@@ -12,6 +13,7 @@ It is very easy to extend and requires only two, one function interfaces for a n
 ## The Main concept:
 A JSON file which represents the Steps and the scenarios is used to configure the mock service you are creating
 This mock service, when run will try to answer any requests with matching responses by following several rules:
+
 * A scenario must be chosen for a session, when the first message enters the engine.
 * Each step has a set of conditions which are just JSON values you require to see in the request
 * An incoming message will only be answered by the current step in the scenario if it matches the conditions, if it doesn't any *matching* fallback step will be chosen, if no step is found an error will be sent to the client.
@@ -21,6 +23,7 @@ This mock service, when run will try to answer any requests with matching respon
 
 
 ## MockingJ Components:
+
 * The MockService class - the registrator for Responders and Listeners, also handles the step & scenario management.
 * Protocol Listeners - classes that register as listeners and create a server (independently), they pass messages to the framework by implementing an event
 * Protocol Responders - classes that respond to messages by running the steps chosen by the MockingJ engine.
@@ -48,6 +51,7 @@ mockSvc.start();
 ## Steps and Scenarios: 
 All **Steps** are saved in the StepLexicon which is part of the ScenarioRepo, that holds all steps.
 The ScenarioRepo also holds scenarios that hold two lists of steps:
+
 1. Scenario steps, which should be run in order
 2. Fallback steps, which can be used when the current step doesn't match the current request. and don't change the session's position in the script
 
