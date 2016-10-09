@@ -4,7 +4,7 @@ Todo list:
 ✔ Think of scenario choice for mock replay, should it be according to protocol type? (matching might take care of that, should we choose by message matching and not only lottery?) @done (10/8/2016, 10:30:31 AM)
 ✔ (mock http server) Create session exractor for HTTP: Setting the sessionId to be the same as socketId is bad - since it limits the scenario length to one (req->response), we should have some extrction routine to find the session in Http headers / url / cookie @done (10/6/2016, 6:36:10 AM)
 ✔ (recorder) complete the recorder by mapping "uid" and req/res & processing the messages into a scenario-repo, then saving it. @done (10/4/2016, 1:24:31 AM)
-☐ (recorder) think of refactoring the recorder to be more similar to the mock service
+☐ (recorder) think of refactoring the recorder to be similar to the mock service
 ☐ (recorder) think if recording rabbit queue messages is also possible / beneficial
 ☐ (recorder) add delay calculations
 ✔ (replay) add a place for initial actions on server run @done (10/8/2016, 5:04:02 PM)
@@ -13,5 +13,9 @@ Todo list:
 ☐ (recorder - closing) add ws close connection step recording
 ☐ (replay - closing) implement closing steps when running close session/scenario.
 ☐ (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
+first prio:
 ☐ (replay) add match step logic by protocol type, do the same for scenario choice by the type of the first step in scenario (collect scenarios matchin first step before running lottery).
 ☐ (replay) add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable)
+☐ (replay - queue) implement rabbitMQ listener & responder.
+☐ think of more than one session (emulate multiple remote agents per MockService instance)
+☐ think of returning or removing weight in scenario choice alg. 

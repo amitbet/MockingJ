@@ -48,7 +48,7 @@ export class ScenarioRepo {
         }
     }
 
-    public loadDataFile(mockDataFile: string, callback:Function) {
+    public loadDataFile(mockDataFile: string, callback: Function) {
         fs.readFile(mockDataFile, "utf8", (err, data) => {
             if (err) throw err;
             var obj = JSON.parse(data);
@@ -86,6 +86,26 @@ export class ScenarioRepo {
             existingScenario.steps.push(step.id);
 
 
+    }
+
+    /**
+     * finds all matching scenarios and chooses one in random
+     */
+    public getRandomScenarioForType(type: string): Scenario {
+        let scenarios: Array<Scenario> = [];
+        _.each(this._scenarios, sc => {
+            let types = this.calculateTypesForScenario(sc);
+            if (_.includes(types, type)) {
+                scenarios.push(sc);
+            }
+        });
+        
+        if (scenarios.length === 0) {
+            return null;
+        }
+
+        let choice = Math.round(Math.random() * (scenarios.length - 1));
+        return scenarios[choice];
     }
 
     /**
@@ -169,6 +189,23 @@ export class ScenarioRepo {
         });
 
         return steps;
+    }
+
+    private calculateTypesForScenario(scenario: Scenario): Array<string> {
+        let types: Array<string> = [];
+        let type: string;
+
+        if (scenario.steps.length > 0) {
+            type = this._stepLex.getStepByName(scenario.steps[0]).type;
+            types.push(type);
+        }
+
+        _.each(scenario.fallbackSteps, fstep => {
+            type = this._stepLex.getStepByName(fstep).type;
+            types.push(type);
+        });
+
+        return _.uniq(types);
     }
 
 }

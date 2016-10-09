@@ -27,8 +27,8 @@ fs.writeFileSync("./scenarios/test.json", repoJson);
 var wsSrv = new MockWsServer(8044, logger);
 var httpSrv = new MockHttpServer(8046, logger);
 var httpClnt = new MockHttpClient(logger);
-// var mockSvc = new MockService("./scenarios/wsScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
-var mockSvc = new MockService("./scenarios/httpScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+var mockSvc = new MockService("./scenarios/wsScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+// var mockSvc = new MockService("./scenarios/httpScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
 
 mockSvc.start();
 

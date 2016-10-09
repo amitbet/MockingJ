@@ -8,7 +8,7 @@ Out of the box it supports:
 * Http (REST)
 * RabbitMQ
 
-It is very easy to extend and requires only two, one function interfaces for a new protocol implementation.
+It is also very easy to extend and requires only two simple interfaces for a new protocol implementation. (just one if no listener is needed)
 
 ## The Main concept:
 A JSON file which represents the Steps and the scenarios is used to configure the mock service you are creating

@@ -82,21 +82,25 @@ export class MockService {
         }
 
         this._listeners[type] = listener;
-        listener.on("incoming", this.handleIncomingMessage.bind(this));
+        listener.on("incoming", this.handleIncomingMessage.bind(this, type));
     }
 
     /**
       * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
       */
-    private getStepFromScenario(ids: MockServerIds, msgObj: any): MockStep {
+    private getStepFromScenario(type: string, ids: MockServerIds, msgObj: any): MockStep {
         let session = this._sessionMap[ids.sessionId];
 
         // TODO: think of session end behaviour...
 
         // session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
         if (!session) {
+            let sc = this.scenarios.getRandomScenarioForType(type);
+            if (sc == null) {
+                this._logger.error("MockService.getStepFromScenario - no scenario found for type: " + type);
+            }
             session = {
-                scenarioId: this.scenarios.getRandomScenarioByWeight().id,
+                scenarioId: sc.id,
                 scenarioPos: 0
             };
             this._sessionMap[ids.sessionId] = session;
@@ -136,14 +140,14 @@ export class MockService {
     /**
      * incoming message handler
      */
-    private handleIncomingMessage(session: MockServerIds, message: any) {
+    private handleIncomingMessage(type: string, session: MockServerIds, message: any) {
         let functionName = "MockService.handleIncomingMessage ";
         this._logger.trace("received: %s", message);
         let msgObj = message;
 
         try {
 
-            let step = this.getStepFromScenario(session, msgObj);
+            let step = this.getStepFromScenario(type, session, msgObj);
             if (step && step.actions) {
                 _.forEach(step.actions, (action, key) => {
                     this._logger.trace(functionName + "sending: %s", JSON.stringify(action.body));
