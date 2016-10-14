@@ -4,9 +4,9 @@ Todo list:
     ☐ @high (replay - closing) implement closing steps - run when running close session/scenario.
     ☐ @high (recorder) - save strings larger than 1000 chars to file, and add a readfileSync call instead of the content (it's messing up the recorder output)  
     ☐ @high (recorder) - debug recorder, see that actions are saved under correct conditions in created steps.
-    ☐ @high (replay) - check match for scenario start
-    ☐ @high (replay) - create a util class with sequence/fs.read/fs.write/generateDataWithType/getSession etc. (for inline json js)
-    ☐ @high (replayMulti) - test multiple sequential replays (fix so it would not require closing)
+    ✔ @high (replay) - check match for scenario start @done (10/14/2016, 10:46:22 AM)
+    ✔ @high (replay) - create a util class with sequence/fs.read/fs.write/generateDataWithType/getSession etc. (for inline json js) @done (10/14/2016, 10:46:27 AM)
+    ☐ @high (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
     ☐ @high (replayMulti) - think of creating a mutliple run step for registering many times (sequence in the util class should help take sequential ports).
     ☐ @high (replayMulti) - think of more than one session per process - it should work just by registering multiple times with different ports (emulate multiple remote agents per MockService instance)
 
@@ -19,7 +19,7 @@ Low:
     ☐ @low (recorder) add delay calculations
     ☐ @low (recorder - closing) add ws close connection step recording
     ☐ @low (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
-    ☐ @low think of returning or removing weight in scenario choice alg.
+    ✔ @low think of returning or removing weight in scenario choice alg. @done (10/14/2016, 11:07:17 AM)
 
 Done:
     ✔ (main mock service) Think of session end behaviour, should we rechoose and get another scenario / should we stay with the fallback steps / close the ws conn? @done (10/8/2016, 10:30:30 AM)

@@ -8,7 +8,7 @@ export interface Scenario {
     fallbackSteps: Array<string>;
     initialSteps?: Array<string>;// will be run when scenario is first added (before accepting any messages for this scenario).
     closeSteps?: Array<string>;// will be performed on scenario/session end
-    weight: number;
+    intervalSteps?: _.Dictionary<number>; // {stepName, interval} dictionary
     id: string;
 }
 
@@ -21,7 +21,6 @@ export class ScenarioRepo {
     private _scenarios: Array<Scenario> = [];
     private _nameMap: _.Dictionary<Scenario> = {};
     private _lottery: _.Dictionary<Scenario> = {};
-    private _maxLotteryTicket = 0;
     private _stepLex: StepLexicon = new StepLexicon();
 
     constructor(private _logger) {
@@ -59,12 +58,8 @@ export class ScenarioRepo {
     }
 
     public addScenario(sc: Scenario) {
-        sc.weight = sc.weight || 0;
-        // sc.type = sc.type || "serial";
         this._scenarios.push(sc);
         this._nameMap[sc.id] = sc;
-        this._maxLotteryTicket += sc.weight;
-        this._lottery[this._maxLotteryTicket] = sc;
     }
 
     public addStep(scenarioId: string, step: MockStep, isFallback = false) {
@@ -74,7 +69,6 @@ export class ScenarioRepo {
             let sc: Scenario = {
                 steps: [],// array of step names
                 fallbackSteps: [],
-                weight: 1,
                 id: scenarioId
             };
             this.addScenario(sc);
@@ -124,22 +118,6 @@ export class ScenarioRepo {
 
         let choice = Math.round(Math.random() * (scenarios.length - 1));
         return scenarios[choice];
-    }
-
-    /**
-     * conducts a weighted lottery between all scenarios in the repo, and chooses one
-     */
-    public getRandomScenarioByWeight(): Scenario {
-        var retval: Scenario = null;
-        var winningTicket = Math.floor(Math.random() * this._maxLotteryTicket);
-        _.forOwn(this._lottery, (val, key) => {
-            let num = _.toNumber(key);
-            if (winningTicket <= num) {
-                retval = this._lottery[key];
-                return retval;
-            }
-        });
-        return retval;
     }
 
     /**
