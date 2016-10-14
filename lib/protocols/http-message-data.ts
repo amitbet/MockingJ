@@ -1,5 +1,5 @@
 import _ = require("lodash");
-import {MockResponse} from "./mock-step";
+import {MockResponse} from "../mock-step";
 export interface HttpMessageData extends MockResponse {
     url?: string;
     method?: string;

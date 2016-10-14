@@ -1,12 +1,12 @@
 import * as http from "http";
 var shortid = require("shortid");
 import _ = require("lodash");
-import {MockResponse} from "./mock-step";
-import {EventEmitter} from "events";
-import {MockServerIds, MockListener, MockResponder} from "./mock-service";
-import {HttpMessageData} from "./http-message-data";
-import {HttpUtils} from "./http-utils";
-import {ILogger, SimpleLogger} from "./simple-logger";
+import { MockResponse } from "../mock-step";
+import { EventEmitter } from "events";
+import { MockServerIds, MockListener, MockResponder } from "../mock-service";
+import { HttpMessageData } from "./http-message-data";
+import { HttpUtils } from "./http-utils";
+import { ILogger, SimpleLogger } from "../simple-logger";
 
 // for http client
 import request = require("request");
@@ -52,7 +52,7 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
 
     private _socketMap: _.Dictionary<http.ServerResponse> = {};
 
-    constructor(port: number, private _logger) {
+    constructor(port: number, private _logger, private sessionFieldOrFunction?: string | ((req) => string)) {
         super();
         this.port = port;
     }
@@ -74,10 +74,13 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
         delete this._socketMap[session.socketId];
 
         let resInfo: HttpMessageData = action.body;
-        res.end(JSON.stringify(resInfo.body));
+        if (resInfo && resInfo.body)
+            res.end(JSON.stringify(resInfo.body));
+        else
+            res.end();
     }
 
-    public start(host?: string, sessionFieldOrFunction?: string | ((req) => string)) {
+    public start(host?: string) {
         try {
 
             // Create a server
@@ -86,12 +89,12 @@ export class MockHttpServer extends EventEmitter implements MockListener, MockRe
                 HttpUtils.processHttpRequest(request, this.type, (httpMessageData) => {
                     session.socketId = session.sessionId;
                     let sessionId = "httpSession";// shortid.generate();
-                    if (sessionFieldOrFunction) {
-                        if (typeof sessionFieldOrFunction === "string") {
-                            sessionId = HttpUtils.getHttpSessionId(request, sessionFieldOrFunction);
+                    if (this.sessionFieldOrFunction) {
+                        if (typeof this.sessionFieldOrFunction === "string") {
+                            sessionId = HttpUtils.getHttpSessionId(request, <string>this.sessionFieldOrFunction);
                         }
                         else {
-                            sessionId = (<((req) => string)>sessionFieldOrFunction)(request);
+                            sessionId = (<((req) => string)>this.sessionFieldOrFunction)(request);
                         }
                     }
                     session.sessionId = sessionId;

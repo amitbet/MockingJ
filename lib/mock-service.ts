@@ -1,9 +1,9 @@
 
 import _ = require("lodash");
-import {MockStep, MockResponse} from "./mock-step";
-import {ScenarioRepo} from "./scenario-repo";
-import {EventEmitter} from "events";
-import {SimpleLogger, ILogger} from "./simple-logger";
+import { MockStep, MockResponse } from "./mock-step";
+import { ScenarioRepo } from "./scenario-repo";
+import { EventEmitter } from "events";
+import { SimpleLogger, ILogger } from "./simple-logger";
 
 export interface MockServerIds {
     sessionId: string; // id of the session with current client (can span multiple requests & multiple socket connections)
@@ -88,14 +88,12 @@ export class MockService {
     /**
       * gets the next step for this scenario & session (may be by step order or any fallback step as defined in the scenario)
       */
-    private getStepFromScenario(type: string, ids: MockServerIds, msgObj: any): MockStep {
+    private getStepFromScenario(type: string, ids: MockServerIds, request: any): MockStep {
         let session = this._sessionMap[ids.sessionId];
-
-        // TODO: think of session end behaviour...
 
         // session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
         if (!session) {
-            let sc = this.scenarios.getRandomScenarioForType(type);
+            let sc = this.scenarios.getRandomScenarioForRequest(request);
             if (sc == null) {
                 this._logger.error("MockService.getStepFromScenario - no scenario found for type: " + type);
             }
@@ -107,7 +105,7 @@ export class MockService {
         }
 
         // get the step from the scenario
-        var scStep = this.scenarios.getStepByNumber(session.scenarioId, session.scenarioPos, msgObj);
+        var scStep = this.scenarios.getStepByNumber(session.scenarioId, session.scenarioPos, request);
         if (!scStep.isFallback)
             ++session.scenarioPos;
 
@@ -142,7 +140,7 @@ export class MockService {
      */
     private handleIncomingMessage(type: string, session: MockServerIds, message: any) {
         let functionName = "MockService.handleIncomingMessage ";
-        this._logger.trace("received: %s", message);
+        this._logger.trace("received: %s", JSON.stringify(message));
         let msgObj = message;
 
         try {

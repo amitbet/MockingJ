@@ -1,0 +1,529 @@
+{
+  "stepPool": [
+    {
+      "id": "regInLab",
+      "requestConditions": {},
+      "actions": [
+        {
+          "headers": {},
+          "method": "POST",
+          "url": "http://127.0.0.1:27081/environment/register",
+          "body": {
+            "id": "{{'env'+(Math.floor(Math.random()*100000000000)).toString()}}",
+            "host": {
+              "address": "192.168.1.105",
+              "wsPort": 8044,
+              "httpPort": 8046,
+              "vncPort": 5901
+            },
+            "os": {
+              "name": "OSX",
+              "version": "16.0.0"
+            },
+            "browsers": [
+              {
+                "name": "chrome",
+                "version": "53"
+              },
+              {
+                "name": "firefox",
+                "version": "38"
+              },
+              {
+                "name": "opera",
+                "version": "28"
+              },
+              {
+                "name": "safari",
+                "version": "7"
+              }
+            ]
+          },
+          "type": "httpClient"
+        }
+      ],
+      "delay": 30,
+      "type": "httpClient"
+    },
+    {
+      "requestConditions": {
+        "type": "request",
+        "data": {
+          "format": "LeanFT",
+          "version": "1",
+          "agentType": "leanFTClient",
+          "data": {
+            "type": "LaunchApplication",
+            "data": {
+              "type": "Browser"
+            }
+          }
+        }
+      },
+      "type": "ws",
+      "actions": [
+        {
+          "body": {
+            "uid": "{{req.uid}}",
+            "type": "request",
+            "handlerType": "QUERY",
+            "data": {
+              "format": "LeanFT",
+              "data": {
+                "type": "REGISTER_DISPATCHER",
+                "data": {
+                  "type": "PackagesManager",
+                  "sessionID": "{{req.data.data.sessionId}}"
+                }
+              }
+            }
+          },
+          "type": "ws"
+        },
+        {
+          "body": {
+            "uid": "{{req.uid}}",
+            "type": "response",
+            "handlerType": "QUERY",
+            "data": {
+              "format": "LeanFT",
+              "data": {
+                "type": "LaunchApplication",
+                "sessionId": "{{req.data.data.sessionId}}",
+                "data": {
+                  "ServerCookie": {
+                    "target": "PackageManager",
+                    "package": "WebPackage",
+                    "testObjectCookie": 1
+                  },
+                  "additionalInfo": {
+                    "Properties": {
+                      "version": "Chrome 52.0"
+                    }
+                  }
+                },
+                "status": 0
+              }
+            }
+          },
+          "type": "ws"
+        }
+      ],
+      "id": "1LaunchApp"
+    },
+    {
+      "requestConditions": {
+        "type": "request",
+        "data": {
+          "format": "LeanFT",
+          "version": "1",
+          "agentType": "leanFTClient",
+          "data": {
+            "type": "ExecuteCommand",
+            "data": {
+              "Operation": "Navigate",
+              "Parameters": [
+                "http://www.ebay.com/"
+              ],
+              "Object": {
+                "ServerCookie": {
+                  "target": "PackageManager",
+                  "package": "WebPackage",
+                  "testObjectCookie": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "type": "ws",
+      "actions": [
+        {
+          "body": {
+            "uid": "{{req.uid}}",
+            "type": "response",
+            "handlerType": "QUERY",
+            "data": {
+              "format": "LeanFT",
+              "data": {
+                "type": "ExecuteCommand",
+                "sessionId": "{{req.data.data.sessionId}}",
+                "data": {
+                  "AdditionalInfo": {
+                    "ReportEventData": {
+                      "abs_x": 0,
+                      "abs_y": 0,
+                      "width": 999999,
+                      "height": 999999,
+                      "DispTestObjectPath": [
+                        "[ Browser ]"
+                      ],
+                      "SnapshotBitmapRef": "R0lGODlhEAAQALMMAP//AAD//wAAgACAAIAAAMDAwICAgAD/AAAA//8AAAAAAP///wAAAAAAAAAAAAAAACH5BAEAAAwALAAAAAAQABAAAARk0MhJDbvXrM15sZjWdcUCMiJHrITiKgySmhOxFQoid0mf2IuCTiAaDBQ+4BC1GAAOx55tyRwcoMjEYgirXo+bAEKAy2xeG4NCEOzOegbczb2RrhQeOms0zxT+gIF/XS+Fhi4XEQA7"
+                    }
+                  }
+                },
+                "sessionInfo": {
+                  "Mode": 0,
+                  "PackageManagerAddress": "{{req.data.data.sessionInfo.PackageManagerAddress}}",
+                  "reportInfo": {
+                    "SnapshotData": 0
+                  }
+                },
+                "status": 0
+              }
+            }
+          },
+          "type": "ws"
+        }
+      ],
+      "id": "2Navigate"
+    },
+    {
+      "requestConditions": {
+        "type": "request",
+        "data": {
+          "format": "LeanFT",
+          "version": "1",
+          "agentType": "leanFTClient",
+          "data": {
+            "type": "ExecuteCommand",
+            "data": {
+              "Operation": "Set",
+              "Parameters": [
+                "3d printer"
+              ],
+              "Object": {
+                "Class": "WebEdit",
+                "Description": {
+                  "Properties": {
+                    "xpath": "//INPUT[@id=\"gh-ac\"]",
+                    "html tag": "INPUT",
+                    "name": "_nkw",
+                    "type": "text"
+                  },
+                  "Index": null
+                },
+                "Parent": {
+                  "Class": "Page",
+                  "Description": {
+                    "Properties": {},
+                    "Index": null
+                  },
+                  "Parent": {
+                    "ServerCookie": {
+                      "target": "PackageManager",
+                      "package": "WebPackage",
+                      "testObjectCookie": 1
+                    }
+                  }
+                }
+              }
+            },
+            "sessionInfo": {
+              "Mode": 0,
+              "reportInfo": {
+                "SnapshotData": 0
+              }
+            }
+          }
+        }
+      },
+      "type": "ws",
+      "actions": [
+        {
+          "body": {
+            "uid": "{{req.uid}}",
+            "type": "response",
+            "handlerType": "QUERY",
+            "data": {
+              "format": "LeanFT",
+              "data": {
+                "type": "ExecuteCommand",
+                "sessionId": "{{req.data.data.sessionId}}",
+                "data": {
+                  "AdditionalInfo": {
+                    "ReportEventData": {
+                      "abs_x": 0,
+                      "abs_y": 0,
+                      "width": 999999,
+                      "height": 999999,
+                      "DispTestObjectPath": [
+                        "[ _nkw ]",
+                        "[ Electronics, Cars, Fashion, Collectibles, Coupons and More | eBay ]",
+                        "[ Electronics, Cars, Fashion, Collectibles, Coupons and More | eBay ]"
+                      ],
+                      "SnapshotHighlightRectX": 682,
+                      "SnapshotHighlightRectY": 41,
+                      "SnapshotHighlightRectWidth": 410,
+                      "SnapshotHighlightRectHeight": 37,
+                      "SnapshotBitmapRef": "R0lGODlhEAAQALMMAP//AAD//wAAgACAAIAAAMDAwICAgAD/AAAA//8AAAAAAP///wAAAAAAAAAAAAAAACH5BAEAAAwALAAAAAAQABAAAARk0MhJDbvXrM15sZjWdcUCMiJHrITiKgySmhOxFQoid0mf2IuCTiAaDBQ+4BC1GAAOx55tyRwcoMjEYgirXo+bAEKAy2xeG4NCEOzOegbczb2RrhQeOms0zxT+gIF/XS+Fhi4XEQA7"
+                    }
+                  }
+                },
+                "sessionInfo": {
+                  "Mode": 0,
+                  "PackageManagerAddress": "{{req.data.data.sessionInfo.PackageManagerAddress}}",
+                  "reportInfo": {
+                    "SnapshotData": 0
+                  }
+                },
+                "status": 0
+              }
+            }
+          },
+          "type": "ws"
+        }
+      ],
+      "id": "3ExecuteSet"
+    },
+    {
+      "requestConditions": {
+        "type": "request",
+        "data": {
+          "format": "LeanFT",
+          "version": "1",
+          "agentType": "leanFTClient",
+          "data": {
+            "type": "ExecuteCommand",
+            "data": {
+              "Operation": "Click",
+              "Parameters": [
+                -9999,
+                -9999,
+                0
+              ],
+              "Object": {
+                "Class": "WebButton",
+                "Description": {
+                  "Properties": {
+                    "xpath": "//INPUT[@id=\"gh-btn\"]",
+                    "html tag": "INPUT",
+                    "name": "Search",
+                    "type": "submit"
+                  },
+                  "Index": null
+                },
+                "Parent": {
+                  "Class": "Page",
+                  "Description": {
+                    "Properties": {},
+                    "Index": null
+                  },
+                  "Parent": {
+                    "ServerCookie": {
+                      "target": "PackageManager",
+                      "package": "WebPackage",
+                      "testObjectCookie": 1
+                    }
+                  }
+                }
+              }
+            },
+            "sessionInfo": {
+              "Mode": 0,
+              "reportInfo": {
+                "SnapshotData": 0
+              }
+            }
+          }
+        }
+      },
+      "type": "ws",
+      "actions": [
+        {
+          "body": {
+            "uid": "{{req.uid}}",
+            "type": "response",
+            "handlerType": "QUERY",
+            "data": {
+              "format": "LeanFT",
+              "data": {
+                "type": "ExecuteCommand",
+                "sessionId": "{{req.data.data.sessionId}}",
+                "data": {
+                  "AdditionalInfo": {
+                    "ReportEventData": {
+                      "abs_x": 0,
+                      "abs_y": 0,
+                      "width": 999999,
+                      "height": 999999,
+                      "DispTestObjectPath": [
+                        "[ Search ]",
+                        "[ Electronics, Cars, Fashion, Collectibles, Coupons and More | eBay ]",
+                        "[ Electronics, Cars, Fashion, Collectibles, Coupons and More | eBay ]"
+                      ],
+                      "SnapshotHighlightRectX": 1282,
+                      "SnapshotHighlightRectY": 40,
+                      "SnapshotHighlightRectWidth": 89,
+                      "SnapshotHighlightRectHeight": 40,
+                      "SnapshotBitmapRef": "R0lGODlhEAAQALMMAP//AAD//wAAgACAAIAAAMDAwICAgAD/AAAA//8AAAAAAP///wAAAAAAAAAAAAAAACH5BAEAAAwALAAAAAAQABAAAARk0MhJDbvXrM15sZjWdcUCMiJHrITiKgySmhOxFQoid0mf2IuCTiAaDBQ+4BC1GAAOx55tyRwcoMjEYgirXo+bAEKAy2xeG4NCEOzOegbczb2RrhQeOms0zxT+gIF/XS+Fhi4XEQA7"
+                    }
+                  }
+                },
+                "sessionInfo": {
+                  "Mode": 0,
+                  "PackageManagerAddress": "{{req.data.data.sessionInfo.PackageManagerAddress}}",
+                  "reportInfo": {
+                    "SnapshotData": 0
+                  }
+                },
+                "status": 0
+              }
+            }
+          },
+          "type": "ws"
+        }
+      ],
+      "id": "4ExecuteClick"
+    },
+    {
+      "requestConditions": {
+        "type": "request",
+        "data": {
+          "format": "LeanFT",
+          "version": "1",
+          "agentType": "leanFTClient",
+          "data": {
+            "type": "ExecuteCommand",
+            "data": {
+              "Operation": "Click",
+              "Parameters": [
+                -9999,
+                -9999,
+                0
+              ],
+              "Object": {
+                "Class": "Link",
+                "Description": {
+                  "Properties": {
+                    "xpath": "//DIV[@id=\"cbelm\"]/DIV/DIV/A[normalize-space()=\"Auction\"]",
+                    "html tag": "A",
+                    "innerText": "Auction"
+                  },
+                  "Index": null
+                },
+                "Parent": {
+                  "Class": "Page",
+                  "Description": {
+                    "Properties": {},
+                    "Index": null
+                  },
+                  "Parent": {
+                    "ServerCookie": {
+                      "target": "PackageManager",
+                      "package": "WebPackage",
+                      "testObjectCookie": 1
+                    }
+                  }
+                }
+              }
+            },
+            "sessionInfo": {
+              "Mode": 0,
+              "reportInfo": {
+                "SnapshotData": 0
+              }
+            }
+          }
+        }
+      },
+      "type": "ws",
+      "actions": [
+        {
+          "body": {
+            "uid": "{{req.uid}}",
+            "type": "response",
+            "handlerType": "QUERY",
+            "data": {
+              "format": "LeanFT",
+              "data": {
+                "type": "ExecuteCommand",
+                "sessionId": "{{req.data.data.sessionId}}",
+                "data": {
+                  "AdditionalInfo": {
+                    "ReportEventData": {
+                      "abs_x": 0,
+                      "abs_y": 0,
+                      "width": 999999,
+                      "height": 999999,
+                      "DispTestObjectPath": [
+                        "[ Auction ]",
+                        "[ 3d printer | eBay ]",
+                        "[ 3d printer | eBay ]"
+                      ],
+                      "SnapshotHighlightRectX": 674,
+                      "SnapshotHighlightRectY": 157,
+                      "SnapshotHighlightRectWidth": 66,
+                      "SnapshotHighlightRectHeight": 30,
+                      "SnapshotBitmapRef": "R0lGODlhEAAQALMMAP//AAD//wAAgACAAIAAAMDAwICAgAD/AAAA//8AAAAAAP///wAAAAAAAAAAAAAAACH5BAEAAAwALAAAAAAQABAAAARk0MhJDbvXrM15sZjWdcUCMiJHrITiKgySmhOxFQoid0mf2IuCTiAaDBQ+4BC1GAAOx55tyRwcoMjEYgirXo+bAEKAy2xeG4NCEOzOegbczb2RrhQeOms0zxT+gIF/XS+Fhi4XEQA7"
+                    }
+                  }
+                },
+                "sessionInfo": {
+                  "Mode": 0,
+                  "PackageManagerAddress": "{{req.data.data.sessionInfo.PackageManagerAddress}}",
+                  "reportInfo": {
+                    "SnapshotData": 0
+                  }
+                },
+                "status": 0
+              }
+            }
+          },
+          "type": "ws"
+        }
+      ],
+      "id": "5ExecuteClick"
+    },
+    {
+      "id": "cleanEnv",
+      "type": "http",
+      "requestConditions": {
+        "method": "POST",
+        "url": "/admin/clean",
+        "headers": []
+      },
+      "actions": [
+        {
+          "headers": {},
+          "type": "http",
+          "method": "POST",
+          "status": 200
+        }
+      ],
+      "delay": 30
+    }
+  ],
+  "scenarios": [
+    {
+      "initialSteps": [
+        "regInLab"
+      ],
+      "steps": [
+        "1LaunchApp",
+        "2Navigate",
+        "3ExecuteSet",
+        "4ExecuteClick",
+        "5ExecuteClick"
+      ],
+      "fallbackSteps": [
+        "2Navigate",
+        "3ExecuteSet",
+        "4ExecuteClick",
+        "5ExecuteClick",
+        "cleanEnv"
+      ],
+      "weight": 1,
+      "id": "Ebay3dPrinter"
+    },
+    {
+      "initialSteps": [],
+      "steps": [
+        "cleanEnv"
+      ],
+      "fallbackSteps": [],
+      "weight": 1,
+      "id": "httpClean"
+    }
+  ]
+}

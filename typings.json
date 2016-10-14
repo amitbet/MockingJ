@@ -3,12 +3,14 @@
     "ws": "github:DefinitelyTyped/DefinitelyTyped/ws/ws.d.ts#c32177d0cdfd4e04102a845925bd012c7f33e3fd"
   },
   "dependencies": {
+    "amqplib": "registry:npm/amqplib#0.4.1+20160726143451",
     "http-proxy": "registry:npm/http-proxy#1.12.0+20160315230223",
     "lodash": "registry:npm/lodash#4.0.0+20160723033700",
     "request": "registry:npm/request#2.69.0+20160428223725"
   },
   "globalDependencies": {
     "node": "registry:env/node#6.0.0+20160918225031",
+    "q": "registry:dt/q#0.0.0+20161004185634",
     "ws": "registry:dt/ws#0.0.0+20161003184106"
   }
 }

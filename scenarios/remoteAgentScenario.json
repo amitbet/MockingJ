@@ -9,7 +9,7 @@
           "method": "POST",
           "url": "http://127.0.0.1:27081/environment/register",
           "body": {
-            "id": "aaaa8f9a-6915-4f96-94f0-435da4b4aaaa",
+            "id": "{{'env'+(Math.floor(Math.random()*100000000000)).toString()}}",
             "host": {
               "address": "127.0.0.1",
               "wsPort": 9032,

@@ -1,5 +1,6 @@
-import {MockStep, MockResponse} from "./mock-step";
+import { MockStep, MockResponse } from "./mock-step";
 import _ = require("lodash");
+import fs = require("fs");
 
 export class StepLexicon {
     private _stepPool: Array<MockStep> = [];
@@ -74,21 +75,30 @@ export class StepLexicon {
     /**
      * gets a step by the given step name
      */
-    public getStepByName(stepName: string, request?: any): MockStep {
+    public getStepByName(stepName: string, request?: any, treatParams = true): MockStep {
         var step: MockStep = this.nameMap[stepName];
         var newStep: MockStep;
 
         if (!step)
             return null;
-       
-        if (!request) {
+
+        if (!treatParams)
             return step;
-        }
+
+        // if (!request) {
+        //     request = {};
+        //     newStep = this.cloneAndParametrize(step, request);
+        //     return newStep;
+        // }
 
         if (this.matchRequest(step.requestConditions, request)) {
             newStep = this.cloneAndParametrize(step, request);
         }
         return newStep;
+    }
+
+    public isMatch(step: MockStep, request: any): boolean {
+        return this.matchRequest(step.requestConditions, request);
     }
 
     /**
@@ -109,6 +119,8 @@ export class StepLexicon {
         };
         return newStep;
     }
+
+
 
     /**
      * tests the request conditions against the request, returns true if request matches
@@ -167,6 +179,41 @@ export class StepLexicon {
         }
         // here for the code undergoing eval (not unused..)
         var req = context.req;
-        return evalInContext.call(context);
+        context.req = context.req || 0;
+
+        // a counter to allow for sequential ports etc.
+        var sequence = context.req;
+
+        var retval = evalInContext.call(context);
+        ++context.req;
+        return retval;
+    }
+}
+
+class InlineSequence {
+    private _counter: number = 0;
+    public getNext(): number {
+        let retval = this._counter;
+        this._counter++;
+        return retval;
+    }
+}
+class InlineUtils {
+    private _sequences = {};
+
+    public readFile(fileName: string): string {
+        return fs.readFileSync(fileName, "utf8");
+    }
+    public writeFile(fileName: string, data: string): void {
+        return fs.writeFileSync(fileName, data, { encoding: "utf8" });
+    }
+
+    public getSeq(seqName: string): InlineSequence {
+        let seq = this._sequences[seqName];
+        if (!seq) {
+            seq = new InlineSequence();
+            this._sequences[seqName] = seq;
+        }
+        return seq;
     }
 }

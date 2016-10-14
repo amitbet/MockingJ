@@ -1,10 +1,10 @@
 import * as WebSocket from "ws";
 var shortid = require("shortid");
 import _ = require("lodash");
-import {MockResponse} from "./mock-step";
-import {EventEmitter} from "events";
-import {MockServerIds, MockListener, MockResponder} from "./mock-service";
-import {ILogger, SimpleLogger} from "./simple-logger";
+import { MockResponse } from "../mock-step";
+import { EventEmitter } from "events";
+import { MockServerIds, MockListener, MockResponder } from "../mock-service";
+import { ILogger, SimpleLogger } from "../simple-logger";
 
 export class MockWsServer extends EventEmitter implements MockListener, MockResponder {
     public listening: boolean;
@@ -31,6 +31,7 @@ export class MockWsServer extends EventEmitter implements MockListener, MockResp
         }
 
         this.wss.on("connection", (ws: WebSocket) => {
+            this._logger.debug("MockWsServer.start, got a connection!");
             let ids: MockServerIds = { sessionId: shortid.generate(), socketId: "" };
 
             // since this is a websocket, we assume (for now) that the socket will last the whole session

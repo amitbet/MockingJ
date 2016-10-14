@@ -1,7 +1,7 @@
 import _ = require("lodash");
-import {StepLexicon} from "./step-lexicon";
+import { StepLexicon } from "./step-lexicon";
 import fs = require("fs");
-import {MockStep} from "./mock-step";
+import { MockStep } from "./mock-step";
 
 export interface Scenario {
     steps: Array<string>;// array of step names
@@ -99,7 +99,25 @@ export class ScenarioRepo {
                 scenarios.push(sc);
             }
         });
-        
+
+        if (scenarios.length === 0) {
+            return null;
+        }
+
+        let choice = Math.round(Math.random() * (scenarios.length - 1));
+        return scenarios[choice];
+    }
+    /**
+     * finds all matching scenarios for given request and chooses one in random
+     */
+    public getRandomScenarioForRequest(request: any): Scenario {
+        let scenarios: Array<Scenario> = [];
+        _.each(this._scenarios, sc => {
+            if (this.isMatchScenario(sc, request)) {
+                scenarios.push(sc);
+            }
+        });
+
         if (scenarios.length === 0) {
             return null;
         }
@@ -191,17 +209,36 @@ export class ScenarioRepo {
         return steps;
     }
 
+    private isMatchScenario(scenario: Scenario, request: any): boolean {
+        let step: MockStep;
+        let retval: boolean = false;
+        if (scenario.steps.length > 0) {
+            step = this._stepLex.getStepByName(scenario.steps[0], null, false);
+            retval = this._stepLex.isMatch(step, request);
+        }
+        if (!retval)
+            _.each(scenario.fallbackSteps, fstep => {
+                step = this._stepLex.getStepByName(fstep, null, false);
+                let match = this._stepLex.isMatch(step, request);
+
+                if (match)
+                    retval = true;
+            });
+
+        return retval;
+    }
+
     private calculateTypesForScenario(scenario: Scenario): Array<string> {
         let types: Array<string> = [];
         let type: string;
 
         if (scenario.steps.length > 0) {
-            type = this._stepLex.getStepByName(scenario.steps[0]).type;
+            type = this._stepLex.getStepByName(scenario.steps[0], null, false).type;
             types.push(type);
         }
 
         _.each(scenario.fallbackSteps, fstep => {
-            type = this._stepLex.getStepByName(fstep).type;
+            type = this._stepLex.getStepByName(fstep, null, false).type;
             types.push(type);
         });
 

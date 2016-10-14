@@ -1,5 +1,5 @@
 
-import {HttpMessageData} from "./http-message-data";
+import {HttpMessageData} from "../http-message-data";
 
 export class HttpUtils {
     public static isJsonStr(value: string, throwException: boolean = false): boolean {
