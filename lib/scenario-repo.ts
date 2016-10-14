@@ -110,10 +110,10 @@ export class ScenarioRepo {
     /**
      * finds all matching scenarios for given request and chooses one in random
      */
-    public getRandomScenarioForRequest(request: any): Scenario {
+    public getRandomScenarioForRequest(request: any, type: string): Scenario {
         let scenarios: Array<Scenario> = [];
         _.each(this._scenarios, sc => {
-            if (this.isMatchScenario(sc, request)) {
+            if (this.isMatchScenario(sc, request, type)) {
                 scenarios.push(sc);
             }
         });
@@ -209,17 +209,17 @@ export class ScenarioRepo {
         return steps;
     }
 
-    private isMatchScenario(scenario: Scenario, request: any): boolean {
+    private isMatchScenario(scenario: Scenario, request: any, type: string): boolean {
         let step: MockStep;
         let retval: boolean = false;
         if (scenario.steps.length > 0) {
             step = this._stepLex.getStepByName(scenario.steps[0], null, false);
-            retval = this._stepLex.isMatch(step, request);
+            retval = this._stepLex.isMatch(step, request, type);
         }
         if (!retval)
             _.each(scenario.fallbackSteps, fstep => {
                 step = this._stepLex.getStepByName(fstep, null, false);
-                let match = this._stepLex.isMatch(step, request);
+                let match = this._stepLex.isMatch(step, request, type);
 
                 if (match)
                     retval = true;

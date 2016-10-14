@@ -97,8 +97,12 @@ export class StepLexicon {
         return newStep;
     }
 
-    public isMatch(step: MockStep, request: any): boolean {
-        return this.matchRequest(step.requestConditions, request);
+    public isMatch(step: MockStep, request: any, type?: string): boolean {
+        let condsOk = this.matchRequest(step.requestConditions, request);
+        if (type)
+            return (step.type === type && condsOk);
+        else
+            return condsOk;
     }
 
     /**

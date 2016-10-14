@@ -93,7 +93,7 @@ export class MockService {
 
         // session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
         if (!session) {
-            let sc = this.scenarios.getRandomScenarioForRequest(request);
+            let sc = this.scenarios.getRandomScenarioForRequest(request, type);
             if (sc == null) {
                 this._logger.error("MockService.getStepFromScenario - no scenario found for type: " + type);
             }
