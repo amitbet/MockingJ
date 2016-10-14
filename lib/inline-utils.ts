@@ -1,5 +1,6 @@
 import fs = require("fs");
 import _ = require("lodash");
+import fakerNs = require("faker");
 
 class InlineSequence {
     private _counter: number = 0;
@@ -10,6 +11,7 @@ class InlineSequence {
     }
 }
 export class InlineUtils {
+    public faker: Faker.FakerStatic = fakerNs;
     private _sequences: _.Dictionary<InlineSequence> = {};
 
     public readFile(fileName: string): string {

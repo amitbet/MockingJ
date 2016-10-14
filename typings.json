@@ -9,6 +9,7 @@
     "request": "registry:npm/request#2.69.0+20160428223725"
   },
   "globalDependencies": {
+    "faker": "registry:dt/faker#3.1.0+20161003184239",
     "node": "registry:env/node#6.0.0+20160918225031",
     "q": "registry:dt/q#0.0.0+20161004185634",
     "ws": "registry:dt/ws#0.0.0+20161003184106"
