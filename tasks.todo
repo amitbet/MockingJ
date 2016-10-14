@@ -11,6 +11,7 @@ Todo list:
     ☐ @high (replayMulti) - think of more than one session per process - it should work just by registering multiple times with different ports (emulate multiple remote agents per MockService instance)
 
 Low:
+    ☐ @today  (replay - load) add some verification for important fields when loading JSON file (type, actions etc.)
     ☐ @low (replay - queue) test rabbitMQ listener & responder.
     ☐ @low (replay) add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable)
     ☐ @low (R&R - closing) add a disconnect step for ws/ queue / close session for http, in both replay and record
