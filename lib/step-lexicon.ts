@@ -1,11 +1,11 @@
 import { MockStep, MockResponse } from "./mock-step";
 import _ = require("lodash");
-import fs = require("fs");
+import { InlineUtils } from "./inline-utils";
 
 export class StepLexicon {
     private _stepPool: Array<MockStep> = [];
     private nameMap: _.Dictionary<MockStep> = {};
-
+    private _utils: InlineUtils = new InlineUtils();
     public toJson(): string {
         return JSON.stringify(this._stepPool, null, 2);
     }
@@ -183,41 +183,9 @@ export class StepLexicon {
         }
         // here for the code undergoing eval (not unused..)
         var req = context.req;
-        context.req = context.req || 0;
-
-        // a counter to allow for sequential ports etc.
-        var sequence = context.req;
+        var utils = this._utils;
 
         var retval = evalInContext.call(context);
-        ++context.req;
         return retval;
-    }
-}
-
-class InlineSequence {
-    private _counter: number = 0;
-    public getNext(): number {
-        let retval = this._counter;
-        this._counter++;
-        return retval;
-    }
-}
-class InlineUtils {
-    private _sequences = {};
-
-    public readFile(fileName: string): string {
-        return fs.readFileSync(fileName, "utf8");
-    }
-    public writeFile(fileName: string, data: string): void {
-        return fs.writeFileSync(fileName, data, { encoding: "utf8" });
-    }
-
-    public getSeq(seqName: string): InlineSequence {
-        let seq = this._sequences[seqName];
-        if (!seq) {
-            seq = new InlineSequence();
-            this._sequences[seqName] = seq;
-        }
-        return seq;
     }
 }
