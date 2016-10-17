@@ -1,17 +1,31 @@
 import { MockStep, MockResponse } from "./mock-step";
 import _ = require("lodash");
 import { InlineUtils } from "./inline-utils";
+import { ILogger } from "./simple-logger";
 
 export class StepLexicon {
     private _stepPool: Array<MockStep> = [];
     private nameMap: _.Dictionary<MockStep> = {};
-    private _utils: InlineUtils = new InlineUtils();
+    private _utils: InlineUtils;
+    constructor(private _logger: ILogger) {
+        this._utils = new InlineUtils(this._logger);
+    }
+
     public toJson(): string {
         return JSON.stringify(this._stepPool, null, 2);
     }
 
     public fromJson(json: string) {
         this._stepPool = JSON.parse(json);
+
+        this.validateDataStructure();
+    }
+
+    /**
+     * validates lexicon data and issues warnings for missing mandatory fields etc.
+     */
+    public validateDataStructure() {
+        _.each(this._stepPool, step => this.validateStep(step));
     }
 
     /**
@@ -22,6 +36,7 @@ export class StepLexicon {
             let step = steps[i];
             this.addOrUpdateStep(step);
         }
+        this.validateDataStructure();
     }
 
     /**
@@ -106,6 +121,34 @@ export class StepLexicon {
     }
 
     /**
+     *   sets the working dir for utils.readFile operations
+     */
+    public setScriptWorkingDir(localPath: string) {
+        this._utils.setLocalPath(localPath);
+    }
+
+    /**
+     * validates a given MockStep, issues warnings in log about problems
+     */
+    private validateStep(step: MockStep) {
+        if (!step.id)
+            this._logger.warn("StepValidation: detected a step without id - it is unusable");
+
+        if (!step.type)
+            this._logger.warn("StepValidation: step: " + step.id + " has no type");
+
+        if (!step.actions || step.actions.length === 0)
+            this._logger.warn("StepValidation: step: " + step.id + " contains no actions");
+
+
+        _.each(step.actions, action => {
+            if (!action.type)
+                this._logger.info("StepValidation: action: '" + action.name + "' has no type in step: " + step.id + " it will be inherited from step.type (= " + step.type + ")");
+        });
+    }
+
+
+    /**
      * clones the step, and materializes response and all inner actions
      */
     private cloneAndParametrize(step: MockStep, request: any): MockStep {
@@ -184,8 +227,8 @@ export class StepLexicon {
         // here for the code undergoing eval (not unused..)
         var req = context.req;
         var utils = this._utils;
-
         var retval = evalInContext.call(context);
         return retval;
     }
+
 }

@@ -1,13 +1,13 @@
-import {WsProxy} from "./ws-proxy";
-import {HttpProxy} from "./http-proxy";
-import {ScenarioRepo} from "../scenario-repo";
-import {MockStep, MockResponse} from "../mock-step";
-import {SimpleLogger, ILogger} from "../simple-logger";
+import { WsProxy } from "./ws-proxy";
+import { HttpProxy } from "./http-proxy";
+import { ScenarioRepo } from "../scenario-repo";
+import { MockStep, MockResponse } from "../mock-step";
+import { SimpleLogger, ILogger } from "../simple-logger";
 import http = require("http");
 import _ = require("lodash");
 import fs = require("fs");
 var shortid = require("shortid");
-import {HttpUtils} from "../http-utils";
+import { HttpUtils } from "../http-utils";
 
 export interface MockRecorderConfiguration {
     wsProxyPort?: number;
@@ -73,9 +73,9 @@ export class MockRecorder {
     // }
     private handleOutgoingHttp(res: any, req: http.IncomingMessage, sessionId: string) {
         HttpUtils.processHttpRequest(req, "http", (reqInfo) => {
-            this._logger.debug("in: ", JSON.stringify(reqInfo));
+            this._logger.debug("--> in: ", reqInfo);
             HttpUtils.processHttpResponse(res, "http", (resInfo) => {
-                this._logger.debug("out: ", JSON.stringify(resInfo));
+                this._logger.debug("<-- out: ", resInfo);
 
                 let matchId = shortid.generate();
                 let reqId = sessionId + "**" + matchId;

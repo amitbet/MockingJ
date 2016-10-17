@@ -20,8 +20,7 @@ export interface MockSessionInfo {
  */
 export interface MockListener extends EventEmitter {
     type: string;
-    port: number;
-    start(host?: string): void;
+    start(): void;
     stop();
     // should also provide an event for 'incoming' with the appropriate message & session.
 }
@@ -94,6 +93,7 @@ export class MockService {
         // session has not been assigned a scenario yet - randomly assign one (choice is weighted as defined in the scenario file)
         if (!session) {
             let sc = this.scenarios.getRandomScenarioForRequest(request, type);
+            this._logger.debug("MockService.getStepFromScenario - chose scenario: ", sc.id);
             if (sc == null) {
                 this._logger.error("MockService.getStepFromScenario - no scenario found for type: " + type);
             }
@@ -140,7 +140,7 @@ export class MockService {
      */
     private handleIncomingMessage(type: string, session: MockServerIds, message: any) {
         let functionName = "MockService.handleIncomingMessage ";
-        this._logger.trace("received: %s", JSON.stringify(message));
+        this._logger.trace(functionName + "--> received:", message);
         let msgObj = message;
 
         try {
@@ -148,7 +148,7 @@ export class MockService {
             let step = this.getStepFromScenario(type, session, msgObj);
             if (step && step.actions) {
                 _.forEach(step.actions, (action, key) => {
-                    this._logger.trace(functionName + "sending: %s", JSON.stringify(action.body));
+                    this._logger.trace(functionName + "<-- sending:", action.body);
 
                     // if no action type exists, inherit it
                     let aType = action.type || step.type;

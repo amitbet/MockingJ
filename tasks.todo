@@ -1,28 +1,34 @@
 
-Todo list:
-
+closnig:
     ☐ @high (replay - closing) implement closing steps - run when running close session/scenario.
-    ☐ @high (recorder) - save strings larger than 1000 chars to file, and add a readfileSync call instead of the content (it's messing up the recorder output)  
+    ☐ @low (R&R - closing) add a disconnect step for ws/ queue / close session for http, in both replay and record
+    ☐ @low (recorder - closing) add ws close connection step recording
+recorder features:
+    ☐ @low (recorder) think of refactoring the recorder to be similar to the mock service
+    ☐ @low (recorder) add delay calculations
+repetitions for steps / interval (might be via delay):
+    ☐ @low (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
+base64 images:
+    ☐ @high (recorder) - save strings larger than 1000 chars to file, and add a readfile call instead of the content (it's messing up the recorder output)
+testing existing features:
+    ☐ @high (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
+    ☐ @high (replayMulti) - think of creating a repetition value in the step for registering many times (same ports and config).
+    ☐ @high (replayMulti) - check if more than one session per process will work - it should work just by registering multiple times
     ☐ @high (recorder) - debug recorder, see that actions are saved under correct conditions in created steps.
+    ☐ @low (replay) add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable)
+loading verifications:
+    ✔ @high (replay - load) add some verification for important fields when loading JSON file (type, actions etc.) @done (10/17/2016, 8:03:37 AM)
+queue support:
+    ☐ @low add 'fanout' exchange support in addition to 'direct' exchange
+    ☐ @low (replay - queue) test rabbitMQ listener & responder
+    ☐ @low (recorder) create a queue message recorder for rabbitMQ messages
+utils:
+    ☐ @low add storage object support for utils, so an action can save something generated or from req, and use it later
+    ✔ @low add getEnvVar support for utils @done (10/17/2016, 8:03:18 AM)
+Done:
     ✔ @high (replay) - check match for scenario start @done (10/14/2016, 10:46:22 AM)
     ✔ @high (replay) - create a util class with sequence/fs.read/fs.write/generateDataWithType/getSession etc. (for inline json js) @done (10/14/2016, 10:46:27 AM)
-    ☐ @high (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
-    ☐ @high (replayMulti) - think of creating a mutliple run step for registering many times (sequence in the util class should help take sequential ports).
-    ☐ @high (replayMulti) - think of more than one session per process - it should work just by registering multiple times with different ports (emulate multiple remote agents per MockService instance)
-
-Low:
-    ☐ @today  (replay - load) add some verification for important fields when loading JSON file (type, actions etc.)
-    ☐ @low (replay - queue) test rabbitMQ listener & responder.
-    ☐ @low (replay) add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable)
-    ☐ @low (R&R - closing) add a disconnect step for ws/ queue / close session for http, in both replay and record
-    ☐ @low (recorder) think of refactoring the recorder to be similar to the mock service
-    ☐ @low (recorder) create a queue message recorder for rabbitMQ messages
-    ☐ @low (recorder) add delay calculations
-    ☐ @low (recorder - closing) add ws close connection step recording
-    ☐ @low (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
     ✔ @low think of returning or removing weight in scenario choice alg. @done (10/14/2016, 11:07:17 AM)
-
-Done:
     ✔ (main mock service) Think of session end behaviour, should we rechoose and get another scenario / should we stay with the fallback steps / close the ws conn? @done (10/8/2016, 10:30:30 AM)
     ✔ Think of scenario choice for mock replay, should it be according to protocol type? (matching might take care of that, should we choose by message matching and not only lottery?) @done (10/8/2016, 10:30:31 AM)
     ✔ (mock http server) Create session exractor for HTTP: Setting the sessionId to be the same as socketId is bad - since it limits the scenario length to one (req->response), we should have some extrction routine to find the session in Http headers / url / cookie @done (10/6/2016, 6:36:10 AM)

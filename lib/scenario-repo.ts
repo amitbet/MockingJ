@@ -1,6 +1,7 @@
 import _ = require("lodash");
 import { StepLexicon } from "./step-lexicon";
 import fs = require("fs");
+import path = require("path");
 import { MockStep } from "./mock-step";
 
 export interface Scenario {
@@ -20,10 +21,11 @@ export interface ScenarioStep {
 export class ScenarioRepo {
     private _scenarios: Array<Scenario> = [];
     private _nameMap: _.Dictionary<Scenario> = {};
-    private _lottery: _.Dictionary<Scenario> = {};
-    private _stepLex: StepLexicon = new StepLexicon();
+    private _stepLex: StepLexicon;
+    private _dataFilePath: string = "";
 
     constructor(private _logger) {
+        this._stepLex = new StepLexicon(this._logger);
     }
 
     public toJson(): string {
@@ -48,6 +50,9 @@ export class ScenarioRepo {
     }
 
     public loadDataFile(mockDataFile: string, callback: Function) {
+        this._dataFilePath = path.dirname(mockDataFile);
+        this._stepLex.setScriptWorkingDir(this._dataFilePath);
+
         fs.readFile(mockDataFile, "utf8", (err, data) => {
             if (err) throw err;
             var obj = JSON.parse(data);
