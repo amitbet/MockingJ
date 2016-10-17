@@ -11,10 +11,10 @@ Out of the box it supports:
 It is also very easy to extend and requires only two simple interfaces for a new protocol implementation. (just one if no listener is needed)
 
 ## The Main concept:
-A JSON file which represents the Steps and the scenarios is used to configure the mock service you are creating
+A JSON script file represents the Steps and the scenarios is used to configure the mock service you are creating
 This mock service, when run will try to answer any requests with matching responses by following several rules:
 
-* A scenario must be chosen for a session, when the first message enters the engine.
+* A scenario will be chosen at the begining of a session, when the first message is received for this session.
 * Each step has a set of conditions which are just JSON values you require to see in the request
 * An incoming message will only be answered by the current step in the scenario if it matches the conditions, if it doesn't any *matching* fallback step will be chosen, if no step is found an error will be sent to the client.
 * The scenario counter will be incremented only if a **scenario** step was performed.
@@ -58,6 +58,16 @@ The ScenarioRepo also holds scenarios that hold two lists of steps:
 When a request is sent into the MockService, a scenario is chosen and *several* steps are tested against it, until a match is found
 the step's response messages are then sent to the respective responders by type.
 
+## Session identification:
+A session is an Id that is decided by the Listener accepting the requests, in WS it is typically the socket, while in http it is typically an Id found on the header
+This SessionId is used by the main engine (the MockService class) to decide whether to choose a new scenario, or to continue stepping trough an existing scenario.
+http listener has an optional session extraction header/funtion available in the constructor.
+
+## request/response matching (recorder):
+During recording, some protocols (WS / Queue) need help with identifing the which response belongs to which request,
+this can be done by default by time based algs which assume that all returning message intercepted answer the latest message recieved, until another request message replaces it as latest.
+another method is usign a correlation Id in the message body (if such a properties exists) - this can be provided to the recorder on initialization.
+
 ## Calculations & request values in responses
 code inside double curly brackets "{{}}" undergoes eval, with a req variable in the context, so any calculation or env/request parameter can be used.
 for env variables use: process.env["varName"]
@@ -75,7 +85,32 @@ conditions put on the step are concrete values for now, and are matched as is to
 if a value is not stated, it will not be checked (so an empty condition list accepts any message).
 Regex or wildcards may be implemented in the future, if we see a need for them.
 
+## inline code / parameters:
+In order to allow for dynamic messages, auto generated content and ids taken from requests,
+any js code inside double curly brackets '{{}}' will be evaluated and replaced with the returned result.
+to make regular operations easier a utils object is provided with the following abilities:
+* utils.faker: fake mock data in various formats [see faker npm package](https://www.npmjs.com/package/faker)
+* utils.getNext('sequence name'): will return the next value for the given sequence
+* utils.getEnv: will return the value of the given env variable
+* utils.readFile: will read a file, and return it's content in utf8 while caching the content for next time.
+* utils.readFileAsBase64: the same as readFile, just that it will encode the content in base64 (for binaries)
+* utils.writeFile: will write given data to file
+* in addition to standard JS operators, Math library functions will work as well.
+ **all paths given will be relative to the location of the script json file.**
 
+### examples:
+```javascript
+"uid": "{{req.uid}}" //get id from request and plant it in the response
+"fromFile": "{{utils.readFileAsBase64('./img.png')}}" // read 'img.png' (in the same dir as the script.json file), and plant the base64 string as the value of the 'fromFile' propery in the response
+"env": "{{utils.getEnv('path')}}" // get $(path) from env variable
+"uuid": "{{utils.faker.random.uuid()}}" // generate a random uuid (GUID)
+"randEmail": "{{utils.faker.internet.email()}}" // generate a random email
+"randNum": "Math.random()*160000+5" // generate a random number in the range [5-160005]
+"randNum":"{{utils.faker.random.number({min:5, max:160005})}}" // generate a random number in the range [5-160005] by using faker
+
+```
+
+### JSON Script example:
 ```javascript
 {
     "stepPool": [
@@ -103,6 +138,7 @@ Regex or wildcards may be implemented in the future, if we see a need for them.
                 {
                     "response": {
                         "uid": "{{req.uid}}",
+                         "fromFile": "{{utils.readFileAsBase64('./img.png')}}",
                         "a": "good33"
                     }
                 }
