@@ -69,6 +69,7 @@
                 {
                     "body": {
                         "uid": "{{req.uid}}",
+                        "fromFile": "{{utils.readFileAsBase64('./img.png')}}",
                         "a": "good33"
                     }
                 }
