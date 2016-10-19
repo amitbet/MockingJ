@@ -6,9 +6,11 @@ import { SimpleLogger, ILogger } from "../simple-logger";
 import http = require("http");
 import _ = require("lodash");
 import fs = require("fs");
+import path = require("path");
 var shortid = require("shortid");
-import { HttpUtils } from "../http-utils";
-
+import { HttpUtils } from "../protocols/http-utils";
+import faker = require("faker");
+import * as Q from "q";
 export interface MockRecorderConfiguration {
     wsProxyPort?: number;
     httpProxyPort?: number;
@@ -17,7 +19,8 @@ export interface MockRecorderConfiguration {
     listeners: "ws" | "http" | "both";
     recordHttpHeaders?: boolean;
     matchWsField?: string; // default is uid
-    mirrorFields: Array<string>; // fields that should be copied from req to response, and not included in conditions
+    mirrorFields?: Array<string>; // fields that should be copied from req to response, and not included in conditions
+    largeFields?: Array<string>; // fields that should be saved to a sperate file
 }
 
 export class MockRecorder {
@@ -26,6 +29,7 @@ export class MockRecorder {
     private _scenarioRepo: ScenarioRepo;
     private _pendingRequests: _.Dictionary<any> = {};
     private _latestRequests: _.Dictionary<any> = {};
+    private _filesWritePath: string;
     constructor(private _configObj: MockRecorderConfiguration, private _logger: ILogger = new SimpleLogger()) {
         // this._configObj.matchWsField = this._configObj.matchWsField || "uid";
 
@@ -35,6 +39,7 @@ export class MockRecorder {
 
 
     public start(saveFilePath: string, saveInterval: number = 5000) {
+        this._filesWritePath = path.dirname(saveFilePath);
         this._scenarioRepo = new ScenarioRepo(this._logger);
         switch (this._configObj.listeners) {
             case "ws":
@@ -88,6 +93,7 @@ export class MockRecorder {
 
                 let requestClone = _.cloneDeep(reqInfo);
                 this.treatMirrorFields(requestClone, true);
+                this.treatLargeFields(requestClone);
 
                 let step: MockStep = {
                     requestConditions: requestClone, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
@@ -101,6 +107,7 @@ export class MockRecorder {
                 let responseClone = _.cloneDeep(resInfo);
 
                 this.treatMirrorFields(responseClone, false);
+                this.treatLargeFields(responseClone);
 
                 let mRes: MockResponse = {
                     body: responseClone, // the response to send
@@ -152,6 +159,26 @@ export class MockRecorder {
         func(parent, key, path);
     }
 
+    private treatLargeFields(obj: any): Q.Promise<any> {
+        let treatment;
+        let filename = faker.random.uuid() + ".txt";
+        filename = "./" + path.join(this._filesWritePath, filename);
+        var promises = [];
+        treatment =
+            (parent, key, path) => {
+                let promise = Q.nfcall(fs.writeFile, filename, parent[key]).then(() => {
+                    parent[key] = "{{utils.readFile('" + filename + "')}}";
+                });
+                promises.push(promise);
+            };
+        if (this._configObj.largeFields) {
+            _.each(this._configObj.largeFields, (path) => {
+                this.deepApply(obj, path, treatment);
+            });
+        }
+        return Q.all(promises);
+    }
+
     private treatMirrorFields(obj: any, del = false) {
         let treatment;
 
@@ -167,17 +194,18 @@ export class MockRecorder {
                     parent[key] = "{{req." + path + "}}";
                 };
         }
-
-        _.each(this._configObj.mirrorFields, (path) => {
-            this.deepApply(obj, path, treatment);
-        });
+        if (this._configObj.mirrorFields)
+            _.each(this._configObj.mirrorFields, (path) => {
+                this.deepApply(obj, path, treatment);
+            });
     }
 
     private handleIncomingWs(req: any, sessionId: string) {
         let matchId = this.deepGetValue(req, this._configObj.matchWsField);
         this._pendingRequests[sessionId + "**" + matchId] = req;
         this._latestRequests[sessionId] = req;
-        this._logger.debug("--->session: %s, ws req: ", sessionId, req);
+        this._logger.debug("--->session: ", sessionId, " ws req: ", req);
+
     }
     private handleOutgoingWs(res: any, sessionId: string) {
 
@@ -202,6 +230,7 @@ export class MockRecorder {
 
         let requestClone = _.cloneDeep(matchingReq);
         this.treatMirrorFields(requestClone, true);
+        this.treatLargeFields(requestClone);
         let step: MockStep = {
             requestConditions: requestClone, // the conditions section is a json which should match the request exactly, missing lines will not be checked (so only lines that exist are required in the request) 
             // delay - time to wait in millisecs before performing any actions
@@ -213,7 +242,7 @@ export class MockRecorder {
 
         let responseClone = _.cloneDeep(res);
         this.treatMirrorFields(responseClone, false);
-
+        this.treatLargeFields(responseClone);
         let mRes: MockResponse = {
             body: responseClone, // the response to send
             // delay - time to wait in millisecs before sending response
@@ -224,7 +253,7 @@ export class MockRecorder {
 
         this._scenarioRepo.addStep(sessionId, step);
 
-        this._logger.debug("<---session: %s, ws res: %s", sessionId, res);
+        this._logger.debug("<---session: ", sessionId, " ws res:", res);
     }
 
     private createHttpListener() {
@@ -254,16 +283,3 @@ export class MockRecorder {
     }
 }
 
-// --test main--
-var logger = new SimpleLogger();
-var mr = new MockRecorder({
-    wsProxyPort: 9000,
-    httpProxyPort: 8000,
-    wsProxyTarget: "ws://localhost:8044",
-    httpProxyTarget: "http://localhost:8045",
-    listeners: "both",
-    matchWsField: "uid",
-    mirrorFields: ["uid", "data.data.sessionId", "data.data.sessionInfo.PackageManagerAddress"]
-}, logger);
-
-mr.start("./scenarioRecording.json");

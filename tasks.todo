@@ -7,25 +7,21 @@ recorder features:
     ☐ @low (recorder) think of refactoring the recorder to be similar to the mock service
     ☐ @low (recorder) add delay calculations
 repetitions for steps / interval (might be via delay):
-    ☐ @low (replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
-base64 images:
-    ☐ @high (recorder) - save strings larger than 1000 chars to file, and add a readfile call instead of the content (it's messing up the recorder output)
+    ☐ @low  *(replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
 testing existing features:
     ☐ @high (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
     ☐ @high (replayMulti) - think of creating a repetition value in the step for registering many times (same ports and config).
     ☐ @high (replayMulti) - check if more than one session per process will work - it should work just by registering multiple times
     ☐ @high (recorder) - debug recorder, see that actions are saved under correct conditions in created steps.
-    ☐ @low (replay) add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable)
-loading verifications:
-    ✔ @high (replay - load) add some verification for important fields when loading JSON file (type, actions etc.) @done (10/17/2016, 8:03:37 AM)
 queue support:
     ☐ @low add 'fanout' exchange support in addition to 'direct' exchange
     ☐ @low (replay - queue) test rabbitMQ listener & responder
     ☐ @low (recorder) create a queue message recorder for rabbitMQ messages
-utils:
-    ☐ @low add storage object support for utils, so an action can save something generated or from req, and use it later
-    ✔ @low add getEnvVar support for utils @done (10/17/2016, 8:03:18 AM)
+context:
+    ☐ @low  [Option1]: add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable) 
+            [Option2]: add storage object support for utils, so an action can save something generated or from req, and use it later
 Done:
+    ✔ @low add getEnvVar support for utils @done (10/17/2016, 8:03:18 AM)
     ✔ @high (replay) - check match for scenario start @done (10/14/2016, 10:46:22 AM)
     ✔ @high (replay) - create a util class with sequence/fs.read/fs.write/generateDataWithType/getSession etc. (for inline json js) @done (10/14/2016, 10:46:27 AM)
     ✔ @low think of returning or removing weight in scenario choice alg. @done (10/14/2016, 11:07:17 AM)
@@ -36,4 +32,5 @@ Done:
     ✔ (replay) add a place for initial actions on server run @done (10/8/2016, 5:04:02 PM)
     ✔ (replay) test http client responder @done (10/8/2016, 5:03:46 PM)
     ✔ (replay) add match step logic by protocol type, do the same for scenario choice by the type of the first step in scenario (collect scenarios matching first step before running lottery). @done (9.10.2016, 18:01:52)
-    
+    ✔ @high (replay - load) add some verification for important fields when loading JSON file (type, actions etc.) @done (10/17/2016, 8:03:37 AM)
+    ✔ @high (recorder) - save strings larger than 1000 chars to file, and add a readfile call instead of the content (it's messing up the recorder output) @done (10/19/2016, 4:51:48 PM)

@@ -40,12 +40,12 @@
             "console": "internalConsole",
             "sourceMaps": false,
             "outDir": null
-        },   
+        },
         {
             "name": "recorder",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceRoot}/lib/recorder/mock-recorder.js",
+            "program": "${workspaceRoot}/lib/appRecorder.js",
             "stopOnEntry": false,
             "args": [],
             "cwd": "${workspaceRoot}/lib/recorder",

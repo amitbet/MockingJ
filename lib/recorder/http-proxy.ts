@@ -1,7 +1,7 @@
 import http = require("http");
 import httpProxy = require("http-proxy");
-import {EventEmitter} from "events";
-import {HttpUtils} from "../http-utils";
+import { EventEmitter } from "events";
+import { HttpUtils } from "../protocols/http-utils";
 
 
 
