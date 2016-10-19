@@ -12,4 +12,5 @@ export interface MockResponse {
     delay?: number; // time to wait in millisecs before sending response
     type: string; // "amqp" | "ws" | "httpRes", "httpReq"; // response type indicates which protocol will be used to send this response if missing will be set by step (as its direct response).
     name?: string; // an optional name, for logging & debugging
+    repetitions?: number; // -1,0 for inifite, default is 1, first response is delayed by 'delay' as are all the rest (so: wait, res, wait, res2, wait, res3)
 }

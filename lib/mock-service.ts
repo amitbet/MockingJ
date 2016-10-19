@@ -164,10 +164,30 @@ export class MockService {
                     if (!action.body)
                         this._logger.warn(functionName + "action %s seems to have no payload: ", action);
 
-                    // send the responses!
-                    setTimeout(() => {
-                        this.handleResponse(action, aType, message, session);
-                    }, delay);
+
+                    let reps: number = action.repetitions || 1;
+
+                    if (action.repetitions === 0)
+                        reps = -1;
+
+                    if (reps === 1) {
+                        // send the response once!
+                        setTimeout(() => {
+                            this.handleResponse(action, aType, message, session);
+                        }, delay);
+                    }
+                    else {
+                        let counter: number = 0;
+                        let timer: NodeJS.Timer = setInterval(() => {
+                            counter++;
+                            this.handleResponse(action, aType, message, session);
+                            if (reps > 1 && counter === reps && timer) {
+                                clearInterval(timer);
+                            }
+                        }, delay);
+
+                    }
+
                 });
             }
             else {

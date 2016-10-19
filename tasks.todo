@@ -1,17 +1,16 @@
 
 closnig:
-    ☐ @high (replay - closing) implement closing steps - run when running close session/scenario.
-    ☐ @low (R&R - closing) add a disconnect step for ws/ queue / close session for http, in both replay and record
-    ☐ @low (recorder - closing) add ws close connection step recording
+    ☐ @high *(R&R - closing) add a disconnect step for ws/ queue / close session for http, in both replay and record (disconnect, maybe a new response property, handled by each responder according to protococl)
+    ☐ @high *(recorder - closing) add ws close connection: record disconnect as an action following prev req
 recorder features:
-    ☐ @low (recorder) think of refactoring the recorder to be similar to the mock service
-    ☐ @low (recorder) add delay calculations
+    ☐ @high (recorder) think of refactoring the recorder to be similar to the mock service
+    ☐ @high (recorder) add delay calculations
 repetitions for steps / interval (might be via delay):
-    ☐ @low  *(replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling)
+    ✔ @high  *(replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling) @done (10/20/2016, 1:45:00 AM)
 testing existing features:
-    ☐ @high (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
-    ☐ @high (replayMulti) - think of creating a repetition value in the step for registering many times (same ports and config).
-    ☐ @high (replayMulti) - check if more than one session per process will work - it should work just by registering multiple times
+    ☐ @low (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
+    ☐ @low (replayMulti) - think of creating a repetition value in the step for registering many times (same ports and config).
+    ☐ @low (replayMulti) - check if more than one session per process will work - it should work just by registering multiple times
     ☐ @high (recorder) - debug recorder, see that actions are saved under correct conditions in created steps.
 queue support:
     ☐ @low add 'fanout' exchange support in addition to 'direct' exchange

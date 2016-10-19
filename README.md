@@ -17,10 +17,51 @@ This mock service, when run will try to answer any requests with matching respon
 * A scenario will be chosen at the begining of a session, when the first message is received for this session.
 * Each step has a set of conditions which are just JSON values you require to see in the request
 * An incoming message will only be answered by the current step in the scenario if it matches the conditions, if it doesn't any *matching* fallback step will be chosen, if no step is found an error will be sent to the client.
-* The scenario counter will be incremented only if a **scenario** step was performed.
+* The scenario will be incremented only if a **scenario** step was performed (not a fallback step).
 * A step my have more then one response (aka action), all actions will be performed on a chosen step.
 * An action can be of any protocol type, so for example: a queue message can be sent as an answer for a received REST request, (while another action is used to send the regular rest response).
 
+## Step & Action structure:
+Below is a step definition, which is constructed out of a conditions section and an action array
+* an action is a response that can be sent via a different protocol type than the recieved request, the 'type' can be specified on the action, if it isn't the step 'type' property is used.
+* mutliple actions are allowed for any single request
+* an action can be sent in delay, a 'delay' property exists on both step and action levels, action delay will be the addition of both, since step delay is applied to all actions, all delays are in miliesecs.
+* a 'repetitions' property exists on the action to allow repeating the same action, delay will be run before each time **including** the first time.
+
+```javascript
+        {
+            "id": "step1",
+            "requestConditions": {
+                "stam": "11",
+                "a": "s1"
+            },
+            "actions": [
+                {
+                    "body": {
+                        "uid": "{{req.uid}}",
+                        "a": "good1"
+                    },
+                    "repetitions": 2,
+                    "delay": 500
+                }
+            ],
+            "delay": 30,
+            "type": "ws"
+        }
+```
+
+## Steps and Scenarios: 
+All **Steps** are saved in the StepLexicon which is part of the ScenarioRepo, that holds all steps.
+The ScenarioRepo also holds scenarios that hold two lists of steps:
+
+1. Scenario steps, which should be run in order
+2. Fallback steps, which can be used when the current step doesn't match the current request. and don't change the session's position in the script
+
+When a request is sent into the MockService, a scenario is chosen and *several* steps are tested against it, until a match is found
+the step's response messages are then sent to the respective responders by type.
+
+
+# General usage:
 
 ## MockingJ Components:
 
@@ -30,7 +71,7 @@ This mock service, when run will try to answer any requests with matching respon
 * The Recorder - composed of two proxies (Http & WS), the recorder captures passing messages (in both directions), and creates Steps in a ScenarioRepository, that is saved to disk.
 * The ScenarioRepository is a class that saves all step & scenario data, its JSON form represents the entirity of the specific mock service configuration. this JSON is what you edit and tweak to get the result you desire.
 
-## Running:
+## Starting up the service:
 When running a mock Service, you should create a MockService instance, register & run listeners & responders like so:
 
 ```javascript
@@ -47,16 +88,25 @@ var mockSvc = new MockService("./scenarios/httpScenario.json", [httpClnt, wsSrv,
 // performs all initial steps, start all listeners.
 mockSvc.start();
 ```
+## Using The Recorder:
+To use the recorder you need to create it, give it a target (your real service url)
+you also need the configure the real client to use the proxy, and after running a single flow trough the system - you will have a starting point for your new mock service written in the file provided to the start method (scenarioRecording.json here).
+you can then start twaking & running the recorded JSON via the MockService class until you get the right result.
 
-## Steps and Scenarios: 
-All **Steps** are saved in the StepLexicon which is part of the ScenarioRepo, that holds all steps.
-The ScenarioRepo also holds scenarios that hold two lists of steps:
+```javascript
+var mr = new MockRecorder({
+    wsProxyPort: 9000,
+    httpProxyPort: 8000,
+    wsProxyTarget: "ws://localhost:8044",
+    httpProxyTarget: "http://localhost:8045",
+    recordHttpHeaders: false,
+    listeners: "both"
+});
 
-1. Scenario steps, which should be run in order
-2. Fallback steps, which can be used when the current step doesn't match the current request. and don't change the session's position in the script
+mr.start("./scenarioRecording.json");
+```
 
-When a request is sent into the MockService, a scenario is chosen and *several* steps are tested against it, until a match is found
-the step's response messages are then sent to the respective responders by type.
+# The finer details:
 
 ## Session identification:
 A session is an Id that is decided by the Listener accepting the requests, in WS it is typically the socket, while in http it is typically an Id found on the header
@@ -76,7 +126,6 @@ for env variables use: process.env["varName"]
 The protocol types written in the step properties (for matching the requests), and in each step action are just strings that identify the correct responder to handle the delivery. 
 These "type" strings are configurable and depend on the string you pass to the registerListener / registerResponder functions and to the values you pass when you create a step in the Listener.
 This structure allows to extend and implement new protocols when needed.
-
 
 ## Configujration Json examples:
 In the following example you can see a JSON that configures a service mock that includes ws requests and responses, where req-res bond identification is done by a "uid" number 
@@ -184,23 +233,7 @@ to make regular operations easier a utils object is provided with the following 
 }
 ```
 
-# Using The Recorder:
-To use the recorder you need to create it, give it a target (your real service url)
-you also need the configure the real client to use the proxy, and after running a single flow trough the system - you will have a starting point for your new mock service written in the file provided to the start method (scenarioRecording.json here).
-you can then start twaking & running the recorded JSON via the MockService class until you get the right result.
 
-```javascript
-var mr = new MockRecorder({
-    wsProxyPort: 9000,
-    httpProxyPort: 8000,
-    wsProxyTarget: "ws://localhost:8044",
-    httpProxyTarget: "http://localhost:8045",
-    recordHttpHeaders: false,
-    listeners: "both"
-});
-
-mr.start("./scenarioRecording.json");
-```
 
 ## License:
 MIT???

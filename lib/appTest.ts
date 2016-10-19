@@ -3,9 +3,8 @@ import { MockWsServer } from "./protocols/mock-ws-server";
 import { MockHttpServer, MockHttpClient } from "./protocols/mock-http-server";
 
 import { SimpleLogger } from "./simple-logger";
-import fs = require("fs");
 import http = require("http");
-import { ScenarioRepo } from "./scenario-repo";
+
 
 var logger = new SimpleLogger();
 
@@ -27,8 +26,9 @@ var logger = new SimpleLogger();
 var wsSrv = new MockWsServer(8044, logger);
 var httpSrv = new MockHttpServer(8046, logger);
 var httpClnt = new MockHttpClient(logger);
-var mockSvc = new MockService("./scenarios/RALite.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+// var mockSvc = new MockService("./scenarios/RALite.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
 // var mockSvc = new MockService("./scenarios/httpScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
+var mockSvc = new MockService("./scenarios/wsScenario.json", [httpClnt, wsSrv, httpSrv], [wsSrv, httpSrv], logger);
 
 mockSvc.start();
 

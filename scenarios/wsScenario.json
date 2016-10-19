@@ -56,7 +56,9 @@
                     "body": {
                         "uid": "{{req.uid}}",
                         "a": "good1"
-                    }
+                    },
+                    "repetitions": 2,
+                    "delay": 500
                 }
             ],
             "delay": 30,
