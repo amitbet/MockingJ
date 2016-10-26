@@ -37,11 +37,11 @@ export class ScenarioRepo {
         return JSON.stringify(retVal, null, 2);
     }
 
-    public fromJson(json: string) {
-        var obj = JSON.parse(json);
-        this._stepLex.fromJson(JSON.stringify(obj.stepPool));
-        this._scenarios = obj.scenarios;
-    }
+    // public fromJson(json: string) {
+    //     var obj = JSON.parse(json);
+    //     this._stepLex.fromJson(JSON.stringify(obj.stepPool));
+    //     this._scenarios = obj.scenarios;
+    // }
 
     public addScenarios(scArr: Array<Scenario>) {
         for (var i = 0; i < scArr.length; i++) {

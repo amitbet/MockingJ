@@ -5,8 +5,6 @@ closnig:
 recorder features:
     ☐ @high (recorder) think of refactoring the recorder to be similar to the mock service
     ☐ @high (recorder) add delay calculations
-repetitions for steps / interval (might be via delay):
-    ✔ @high  *(replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling) @done (10/20/2016, 1:45:00 AM)
 testing existing features:
     ☐ @low (replayXTimes) - test multiple sequential replays (fix so it would not require closing)
     ☐ @low (replayMulti) - think of creating a repetition value in the step for registering many times (same ports and config).
@@ -17,9 +15,10 @@ queue support:
     ☐ @low (replay - queue) test rabbitMQ listener & responder
     ☐ @low (recorder) create a queue message recorder for rabbitMQ messages
 context:
-    ☐ @low  [Option1]: add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable) 
-            [Option2]: add storage object support for utils, so an action can save something generated or from req, and use it later
+    ☐ @low allow for context: [Option1]: add context to the eval in steps, that can be fed information from the listener (or just append stuff to the req variable) 
+                               [Option2]: add storage object support for utils, so an action can save something generated or from req, and use it later
 Done:
+    ✔ @high  *(replay - polling/heartbeat) inplement interval steps, that are run as recurring tasks (emulate polling) @done (10/20/2016, 1:45:00 AM)
     ✔ @low add getEnvVar support for utils @done (10/17/2016, 8:03:18 AM)
     ✔ @high (replay) - check match for scenario start @done (10/14/2016, 10:46:22 AM)
     ✔ @high (replay) - create a util class with sequence/fs.read/fs.write/generateDataWithType/getSession etc. (for inline json js) @done (10/14/2016, 10:46:27 AM)

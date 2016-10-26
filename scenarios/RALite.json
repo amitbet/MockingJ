@@ -11,7 +11,7 @@
           "body": {
             "id": "{{'env'+(Math.floor(Math.random()*100000000000)).toString()}}",
             "host": {
-              "address": "192.168.1.105",
+              "address": "16.60.194.233",
               "wsPort": 8044,
               "httpPort": 8046,
               "vncPort": 5901
@@ -39,6 +39,7 @@
               }
             ]
           },
+          "repetitions": 20,
           "type": "httpClient"
         }
       ],

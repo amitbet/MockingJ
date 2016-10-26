@@ -3,7 +3,8 @@ var shortid = require("shortid");
 import _ = require("lodash");
 import { MockResponse } from "../mock-step";
 import { EventEmitter } from "events";
-import { MockServerIds, MockListener, MockResponder } from "../mock-service";
+import { MockServerIds, MockListener } from "../mock-service";
+import { MockResponder } from "../mock-responder";
 import { ILogger, SimpleLogger } from "../simple-logger";
 
 export class MockWsServer extends EventEmitter implements MockListener, MockResponder {

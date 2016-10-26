@@ -1,13 +1,14 @@
 // import * as http from "http";
 // var shortid = require("shortid");
 import _ = require("lodash");
-import {MockResponse} from "../mock-step";
-import {EventEmitter} from "events";
-import {MockServerIds, MockListener, MockResponder} from "../mock-service";
-import {ILogger, SimpleLogger} from "../simple-logger";
+import { MockResponse } from "../mock-step";
+import { EventEmitter } from "events";
+import { MockServerIds, MockListener } from "../mock-service";
+import { MockResponder } from "../mock-responder";
+import { ILogger, SimpleLogger } from "../simple-logger";
 import Amqp = require("amqplib");
 import Q = require("q");
-import {AmqpConnectionHelper, AmqpUtil} from "./queue-helper";
+import { AmqpConnectionHelper, AmqpUtil } from "./queue-helper";
 
 export interface QueuePublishInfo {
     exchangeName: string;
