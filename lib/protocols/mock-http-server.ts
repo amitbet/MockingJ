@@ -14,7 +14,7 @@ import request = require("request");
 
 export class MockHttpClient extends EventEmitter implements MockResponder {
     public type: string = "httpClient";
-
+    public cookieJar: request.CookieJar = request.jar();
     constructor(private _logger: ILogger = new SimpleLogger()) {
         super();
     }
@@ -27,7 +27,7 @@ export class MockHttpClient extends EventEmitter implements MockResponder {
         let resData = <HttpMessageData>action;
         var method = resData.method.toUpperCase();
 
-        var reqOptions: request.UrlOptions & request.CoreOptions = { url: resData.url };
+        var reqOptions: request.UrlOptions & request.CoreOptions = { url: resData.url, jar: this.cookieJar };
 
         reqOptions.url = resData.url;
 
